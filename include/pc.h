@@ -2,6 +2,8 @@
 #define PC_H
 
 #include <stdint.h>
+#include "instruction_mem.h"
+#include "ULA.h"
 
 typedef struct {
     uint8_t pc_index;

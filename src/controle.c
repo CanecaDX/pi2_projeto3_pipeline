@@ -1,190 +1,109 @@
-#include "../include/multiciclo.h"
+#include "controle.h"
 
-void controle_sinais(Multiciclo *m){
-	m->controle->entrada.opcode = m->decoded_inst.opcode;
-	m->controle->entrada.funct = m->decoded_inst.funct;
+Out_controle controle_sinais(In_controle in){
+	Out_controle out = {0};
 
-	switch(m->controle->states->ciclos){
-		case 0: //busca
-			m->controle->states->ac_state = 0;
-			m->controle->states->next_state = 1;
-			m->controle->sinais = (Sinais){0};
-			m->controle->sinais.IResc = 0x1;
-			m->controle->sinais.PCesc = 0x1;
-			m->controle->sinais.ULAFonteB = 0x1;
-			m->controle->sinais.ULA_op = 0x0; // soma para incremento do PC
-			m->controle->states->ciclos++;
+	switch (in.opcode) {
+		case 0x0: // tipo r
+			out.RegDst = 1;
+			out.RegWrite = 1;
+			out.ULASrc = 0;
+			out.Memtoreg = 0;
+			out.MemRead = 0;
+			out.MemWrite = 0;
+			out.Branch = 0;
+			out.jump = 0;
+			out.ULA_op = in.function;
 			break;
-		case 1: //decodiicacao
-			m->controle->states->ac_state = 1;
-			switch(m->controle->entrada.opcode){
-				case 0x0: // tipo r
-					m->controle->states->next_state = 7;
-					break;
-				case 0xB: // lw
-				case 0xF: // sw
-				case 0x04: // addi
-					m->controle->states->next_state = 2;
-					break;
-				case 0x8: // beq
-					m->controle->states->next_state = 9;
-					break;
-				case 0x2: // j
-					m->controle->states->next_state = 10;
-					break;
-			}
-			m->controle->sinais = (Sinais){0};
-			m->controle->sinais.ULAFonteB = 0x2;
-			m->controle->sinais.RegDst = 0x1;
-			m->controle->sinais.ULA_op = 0x0; // soma para cálculo de endereço/branch
-			m->controle->states->ciclos++;
+
+		case 0xB: // lw
+			out.RegDst = 0;
+			out.RegWrite = 1;
+			out.Memtoreg = 1;
+			out.ULASrc = 1;
+			out.MemRead = 1;
+			out.MemWrite = 0;
+			out.Branch = 0;
+			out.jump = 0;
+			out.ULA_op = 0; 
 			break;
-		case 2: //execuçao
-			switch(m->controle->states->next_state){
-				case 7: //tipo r
-					m->controle->states->ac_state = 7;
-					m->controle->states->next_state = 8;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.ULAFonteA = 1;
-					m->controle->sinais.ULAFonteB = 00;
-					m->controle->sinais.ULA_op = m->controle->entrada.funct; 
-					m->controle->sinais.RegDst = 1;
-					break;
-					
-				case 2: //tipo I
-					m->controle->states->ac_state = 2;
-					
-					if(m->controle->entrada.opcode == 0xB){
-						m->controle->states->next_state = 3;
-					}
-					else if(m->controle->entrada.opcode == 0xF){
-						m->controle->states->next_state = 5;
-					}
-					else if(m->controle->entrada.opcode == 0x4){
-						m->controle->states->next_state = 6;
-					}
-					
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.ULAFonteA = 1;
-					m->controle->sinais.ULAFonteB = 10;
-					m->controle->sinais.ULA_op = 0x0; 
-					break;
-				case 9: //beq
-					m->controle->states->ac_state = 9;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.ULAFonteA = 1;
-					m->controle->sinais.ULA_op = 0x2; 
-					m->controle->sinais.Branch = 1;
-					m->controle->sinais.PCsrc = 1;
-					// m->controle->states->ciclos=0;
-					break;
-				case 10: //jump
-					m->controle->states->ac_state = 10;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.PCesc = 1;
-					m->controle->sinais.PCsrc = 0x2;
-					m->controle->states->ciclos=0;
-					break;
-			}
-			m->controle->states->ciclos++;
+
+		case 0xF: // sw
+			out.RegDst = 0;
+			out.RegWrite = 0;
+			out.Memtoreg = 0;
+			out.ULASrc = 1;
+			out.MemRead = 0;
+			out.MemWrite = 1;
+			out.Branch = 0;
+			out.jump = 0;
+			out.ULA_op = 0;
 			break;
-		case 3: //escrita no banco de registradores ou acesso a memoria
-		//a partir desse ciclo, precisa fazer um switch ou ifelse com o estado anterior e atual, alem do opcode, pra determinar os sinais e próximo estado
-			switch(m->controle->states->next_state){
-				case 8: // tipo r
-					m->controle->states->ac_state = 8;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.RegDst = 1;
-					m->controle->sinais.RegWrite = 1;
-					m->controle->sinais.Memtoreg = 0;	
-					break; 
-				case 3: //lw
-					m->controle->states->ac_state = 3;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.MemRead = 1;
-					m->controle->sinais.MemWrite = 0;
-					m->controle->sinais.IouD = 1;	
-					m->controle->states->next_state = 4;
-					break;
-				case 5: //sw
-					m->controle->states->ac_state = 5;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.MemRead = 1;
-					m->controle->sinais.MemWrite = 1;
-					m->controle->sinais.IouD = 0;	
-					break;
-				case 6: //addi
-					m->controle->states->ac_state = 6;
-					m->controle->sinais = (Sinais){0};
-					m->controle->sinais.MemWrite = 0;
-					m->controle->sinais.RegWrite = 1;
-					m->controle->sinais.RegDst = 0;
-					m->controle->sinais.Memtoreg = 0;	
-					break;
-			}
-			if (m->controle->states->next_state == 4) {
-				m->controle->states->ciclos++;
-			} else {
-				m->controle->states->ciclos = 0;
-			}
+
+        case 0x4: //addi
+			out.RegDst = 0;
+			out.RegWrite = 1;
+			out.Memtoreg = 0;
+			out.ULASrc = 1;
+			out.MemRead = 0;
+			out.MemWrite = 0;
+			out.Branch = 0;
+			out.jump = 0;
+			out.ULA_op = 0;
 			break;
-		case 4: //escrita do dado da memoria no banco de registradores (lw)
-			m->controle->states->ac_state = 4;
-			m->controle->sinais = (Sinais){0};
-			m->controle->sinais.MemWrite = 0;
-			m->controle->sinais.RegWrite = 1;
-			m->controle->sinais.Memtoreg = 1;	
-		
-			m->controle->states->ciclos ++;
+
+        case 0x8: //beq 
+			out.RegDst = 0;
+			out.RegWrite = 0;
+			out.Memtoreg = 0;
+			out.ULASrc = 0;
+			out.MemRead = 0;
+			out.MemWrite = 0;
+			out.Branch = 1;
+			out.jump = 0;
+			out.ULA_op = 2; 
+            break;
+
+        case 0x2: //j
+			out.RegDst = 0;
+			out.RegWrite = 0;
+			out.Memtoreg = 0;
+			out.ULASrc = 0;
+			out.MemRead = 0;
+			out.MemWrite = 0;
+			out.Branch = 0;
+			out.jump = 1;
+			out.ULA_op = 0;
+            break;
+
+		default:
 			break;
 	}
-/*
-deixei aqui só pra gente não se perder com os opcodes
-0x0 tipo r
-0xB lw
-0xF sw
-0x4 addi
-0x8 beq
-0x2 j
-*/
 
-	return;
+	return out;
 }
 
-void copiaEntradaControle(Entrada_controle input_backup, Entrada_controle input){
- input_backup.opcode = input.opcode; 
- input_backup.funct = input.funct;
+void copiaEntradaControle(In_controle input_backup, In_controle input){
+ input_backup.opcode = input.opcode;
+ input_backup.function = input.function;
 }
-void copiaSinaisControle(Sinais sinais_backup, Sinais sinais){
-	sinais_backup.RegDst = sinais.RegDst;
-    sinais_backup.RegWrite = sinais.RegWrite;;
-   	sinais_backup.Memtoreg = sinais.Memtoreg;
-    sinais_backup.ULASrc = sinais.ULASrc;
-    sinais_backup.MemRead = sinais.MemRead;
-    sinais_backup.MemWrite = sinais.MemWrite;
-    sinais_backup.Branch = sinais.Branch; 
-    sinais_backup.jump = sinais.jump;
-    sinais_backup.ULA_op = sinais.ULA_op;
-    sinais_backup.IResc = sinais.IResc;
-    sinais_backup.PCesc = sinais.PCesc;
-    sinais_backup.PCsrc = sinais.PCsrc;
-    sinais_backup.ULAFonteA = 	sinais.ULAFonteA;
-    sinais_backup.ULAFonteB = sinais.ULAFonteB;
-    sinais_backup.IouD = sinais.IouD;
- }
 
- void copiaStatesControle(FSM* states_backup , FSM* statess){
- 	states_backup->ac_state = statess->ac_state;
-    states_backup->ant_state = statess->ant_state ;
-    states_backup->next_state = statess->next_state;
-    states_backup->ciclos = statess->ciclos;
- }
+void copiaSaidaControle(Out_controle output_backup, Out_controle output){
+ output_backup.RegDst = output.RegDst;
+ output_backup.RegWrite = output.RegWrite;
+ output_backup.Memtoreg = output.Memtoreg;
+ output_backup.ULASrc = output.ULASrc;
+ output_backup.MemRead = output.MemRead;
+ output_backup.MemWrite = output.MemWrite;
+ output_backup.Branch = output.Branch;
+ output_backup.jump = output.jump;
+ output_backup.ULA_op = output.ULA_op; 
+}
 
 void copiaControle(Controle* controle_backup, Controle* controle){
+ controle_backup->input = controle->input;
+ copiaEntradaControle(controle_backup->input, controle->input);
+ controle_backup->output = controle->output;
+ copiaSaidaControle(controle_backup->output, controle->output);
 
- copiaEntradaControle(controle_backup->entrada, controle->entrada);
-
- copiaSinaisControle(controle_backup->sinais, controle->sinais);
-
- copiaStatesControle(controle_backup->states, controle->states);
-}  
+} 

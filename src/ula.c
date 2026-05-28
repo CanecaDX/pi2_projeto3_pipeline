@@ -26,6 +26,14 @@ Out_ULA ulaExecuta(In_ULA *p){
 	out.resultado = (int8_t)res;
 	out.zero = (out.resultado == 0) ? 1 : 0;
 	
+	if(out.Overflow){
+		if(res < -128)
+			out.resultado = -128;
+		if(res > 127)
+			out.resultado = 127;
+	}
+	
+	
     
     return out;
 }

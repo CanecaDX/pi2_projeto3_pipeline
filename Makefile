@@ -7,17 +7,18 @@ CFLAGS ?= -Wall -Wextra -g -O2 -Iinclude
 
 SRCS := mars_main.c \
 	src/controle.c \
+	src/data_mem.c \
 	src/decoder.c \
 	src/extensor.c \
-	src/memory.c \
-	src/multiciclo.c \
+	src/instruction_mem.c \
+	src/monociclo.c \
 	src/pc.c \
 	src/registers.c \
-	src/ULA.c
+	src/ula.c
 
 OBJS := $(SRCS:.c=.o)
 
-.PHONY: all run clean 
+.PHONY: all run clean help
 
 all: $(APP)
 

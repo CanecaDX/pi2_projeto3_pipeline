@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include "pc.h"
-#include "ULA.h"
 
 ProgramCounter *pc_create(uint8_t pc_index){
     ProgramCounter *pc = malloc(sizeof(ProgramCounter));

@@ -1,0 +1,41 @@
+
+APP := mars_c
+
+CC ?= gcc
+
+CFLAGS ?= -Wall -Wextra -g -O2 -Iinclude
+
+SRCS := mars_main.c \
+	controle.c \
+	data_mem.c \
+	decoder.c \
+	extensor.c \
+	instruction_mem.c \
+	monociclo.c \
+	pc.c \
+	registers.c \
+	ula.c
+
+OBJS := $(SRCS:.c=.o)
+
+.PHONY: all run clean help
+
+all: $(APP)
+
+$(APP): $(OBJS)
+	$(CC) $(OBJS) -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+run: $(APP)
+	./$(APP)
+
+clean:
+	rm -f $(OBJS) $(APP)
+
+help:
+	@echo "Usage:"
+	@echo "  make        - Build"
+	@echo "  make run    - Run"
+	@echo "  make clean  - Clean up build files"

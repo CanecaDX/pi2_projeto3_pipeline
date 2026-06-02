@@ -7,10 +7,10 @@
     
 int main(){
     int op;
-    Monociclo *m = monociclo_create();
-    Monociclo  *m_backup = monociclo_create();
+    Pipeline *p = pipeline_create();
+    Pipeline  *p_backup = pipeline_create();
 
-    if (!m) {
+    if (!p) {
         printf("\nFalha ao alocar monociclo.");
         return 1;
     }
@@ -44,7 +44,7 @@ int main(){
                 char data_name[128];
                 printf("\nInforme o arquivo .dat: ");
                 scanf("%127s", data_name);
-                data_memory_load(m->mem_data, data_name);
+                data_memory_load(p->mem_data, data_name);
                 break;
             }
             case 2: {
@@ -53,71 +53,74 @@ int main(){
                 scanf("%127s", mem_name);
                 Memoria_instrucao *new_mem = instruction_memory_load_file(mem_name);
                 if (new_mem) {
-                    if (m->mem_inst) {
-                        free(m->mem_inst->instrucao);
-                        free(m->mem_inst);
+                    if (p->mem_inst) {
+                        free(p->mem_inst->instrucao);
+                        free(p->mem_inst);
                     }
-                    m->mem_inst = new_mem;
-                    m->has_executed = 0;
-                    m->just_rewound = 0;
+                    p->mem_inst = new_mem;
+                    p->has_executed = 0;
+                    p->just_rewound = 0;
                 }
                 break;
             }
-            case 3: data_memory_print(m->mem_data); break;
-            case 4: print_instruction_memory(m->mem_inst); break;
-            case 5: print_regs(m->regs_bank); break;
+            case 3: data_memory_print(p->mem_data); break;
+            case 4: print_instruction_memory(p->mem_inst); break;
+            case 5: print_regs(p->regs_bank); break;
             case 6: {
-                if (!m->mem_inst || m->mem_inst->loaded_count == 0) {
+                if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                     printf("Não existem instruções na memória ainda. Para exibir o Assembly, carregue instruções primeiro.\n");
                     break;
                 }
-                exibeTodos_asm(m->mem_inst);
+                exibeTodos_asm(p->mem_inst);
                 break;
             }
-            case 7:	print_instruction_memory(m->mem_inst); printf("\n"); data_memory_print(m->mem_data); print_regs(m->regs_bank); printf("\n"); exibeTodos_asm(m->mem_inst); printf("\n"); printf("\n\nPC ESTÁ EM : %d\n", m->pc->pc_index); break;
+            case 7:	print_instruction_memory(p->mem_inst); printf("\n"); data_memory_print(p->mem_data); print_regs(p->regs_bank); printf("\n"); exibeTodos_asm(p->mem_inst); printf("\n"); printf("\n\nPC ESTÁ EM : %d\n", p->pc->pc_index); break;
             case 8: {
-                if (!m->mem_inst || m->mem_inst->loaded_count == 0) {
+                if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                     printf("Não existem instruções na memória ainda. Para gerar o arquivo Assembly, carregue instruções primeiro.\n");
                     break;
                 }
-                mem_to_asm(m->mem_inst);
+                mem_to_asm(p->mem_inst);
                 break;
             }
-            case 9: data_memory_save(m->mem_data, "output_dados.dat"); break;
+            case 9: data_memory_save(p->mem_data, "output_dados.dat"); break;
             case 10: {
-                run(m);
-                m->just_rewound = 1;
+                run(p);
+                p->just_rewound = 1;
                 break;
             }
             case 11: {
-                 copiaSimulador(m_backup, m);
-                 if(m->pc->pc_index == m->mem_inst->loaded_count){
-						m->pc->pc_index = 0;
+                 /*
+                 copiaSimulador(p_backup, p);
+                 if(p->pc->pc_index == p->mem_inst->loaded_count){
+						p->pc->pc_index = 0;
 				 }
-				run_step(m);
+				 
+				 */
+				run_step(p);
             break;
             }
             case 12: {
-                if (!m->has_executed) {
+                if (!p->has_executed) {
                     printf("Para voltar uma instrução, ao menos uma deve ter sido executada.\n");
                     break;
                 }
-                if (m->just_rewound) {
+                if (p->just_rewound) {
                     printf("Não é possível voltar duas instruções seguidas.\n");
                     break;
                 }
-                copiaSimulador(m,m_backup);
-                m->just_rewound = 1;
+                copiaSimulador(p,p_backup);
+                p->just_rewound = 1;
                 printf("VOLTOU 1 INSTRUCAO ! \n");
-                printf("PC ESTA EM : %d \n", m->pc->pc_index);
+                printf("PC ESTA EM : %d \n", p->pc->pc_index);
                 break;
             }
             case 13: 
-				if (!m->mem_inst || m->mem_inst->loaded_count == 0) {
+				if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                     printf("Não existem instruções na memória ainda. Para exibir as estatísticas, carregue instruções primeiro.\n");
                     break;
                 }
-				exibeEst(m->mem_inst);
+				exibeEst(p->mem_inst);
             break;
             default: printf("\nOpção inválida!"); break;
         }

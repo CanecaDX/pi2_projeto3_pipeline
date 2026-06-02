@@ -16,7 +16,7 @@ typedef struct {
     uint8_t rd;
     uint8_t funct;
     int8_t imm;   
-    uint16_t address;
+    uint8_t address;
     Tipo type;
 } Decoded;
 

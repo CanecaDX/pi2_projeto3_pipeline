@@ -14,7 +14,7 @@ Decoded decode(uint16_t instruction){
     decode_instruction.rt     = (instruction >> 6) & 0x7;
     decode_instruction.rd     = (instruction >> 3) & 0x7;
     decode_instruction.funct  = instruction & 0x7;
-    decode_instruction.address = instruction & 0x3F;
+    decode_instruction.address = instruction & 0xFF;
 
     uint8_t imm6 = instruction & 0x3F;
     decode_instruction.imm = extend(imm6);

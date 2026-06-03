@@ -74,7 +74,7 @@ int main(){
                 exibeTodos_asm(p->mem_inst);
                 break;
             }
-            case 7:	print_instruction_memory(p->mem_inst); printf("\n"); data_memory_print(p->mem_data); print_regs(p->regs_bank); printf("\n"); exibeTodos_asm(p->mem_inst); printf("\n"); printf("\n\nPC ESTÁ EM : %d\n", p->pc->pc_index); break;
+            case 7:	print_instruction_memory(p->mem_inst); printf("\n"); data_memory_print(p->mem_data); print_regs(p->regs_bank); printf("\n"); exibeTodos_asm(p->mem_inst); printf("\n"); printf("\n\nPC ESTÁ EM : %d\n", p->pc.pc_index); break;
             case 8: {
                 if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                     printf("Não existem instruções na memória ainda. Para gerar o arquivo Assembly, carregue instruções primeiro.\n");
@@ -92,8 +92,8 @@ int main(){
             case 11: {
                  /*
                  copiaSimulador(p_backup, p);
-                 if(p->pc->pc_index == p->mem_inst->loaded_count){
-						p->pc->pc_index = 0;
+                     if(p->pc.pc_index == p->mem_inst->loaded_count){
+                        p->pc.pc_index = 0;
 				 }
 				 
 				 */
@@ -112,7 +112,7 @@ int main(){
                 copiaSimulador(p,p_backup);
                 p->just_rewound = 1;
                 printf("VOLTOU 1 INSTRUCAO ! \n");
-                printf("PC ESTA EM : %d \n", p->pc->pc_index);
+				printf("PC ESTA EM : %d \n", p->pc.pc_index);
                 break;
             }
             case 13: 

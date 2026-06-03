@@ -6,15 +6,16 @@ CC ?= gcc
 CFLAGS ?= -Wall -Wextra -g -O2 -Iinclude
 
 SRCS := mars_main.c \
-	controle.c \
-	data_mem.c \
-	decoder.c \
-	extensor.c \
-	instruction_mem.c \
-	monociclo.c \
-	pc.c \
-	registers.c \
-	ula.c
+	src/controle.c \
+	src/data_mem.c \
+	src/decoder.c \
+	src/extensor.c \
+	src/instruction_mem.c \
+	src/pipeline.c \
+	src/pc.c \
+	src/registers.c \
+	src/registradores_pipeline.c \
+	src/ula.c
 
 OBJS := $(SRCS:.c=.o)
 

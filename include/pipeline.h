@@ -11,17 +11,17 @@
 #include "registradores_pipeline.h"
 
 typedef struct {
-    ProgramCounter *pc;
+    ProgramCounter pc;
     Banco_registradores *regs_bank;
     Memoria_dado *mem_data;
     Memoria_instrucao *mem_inst;
-    BI_DI *bi_di;
-    DI_EX *di_ex;
-    EX_MEM *ex_mem;
-    MEM_WB *mem_wb;
-    Controle *controle;
-    Decoded *decoded_inst;
-    ULA *ula;
+    BI_DI bi_di;
+    DI_EX di_ex;
+    EX_MEM ex_mem;
+    MEM_WB mem_wb;
+    Controle controle;
+    Decoded decoded_inst;
+    ULA ula;
     int has_executed;
     int just_rewound;
 } Pipeline;

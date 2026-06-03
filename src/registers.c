@@ -38,6 +38,9 @@ Out_registers ex_registers(In_registers input, Banco_registradores *regs){
 }
 
 void copiaBancoRegistradores(Banco_registradores* banco_backup, Banco_registradores* banco){
+    if (!banco_backup || !banco) return;
+    banco_backup->in_regs = banco->in_regs;
+    banco_backup->out_regs = banco->out_regs;
     int i;
     for(i = 0; i < 8; i++){
        banco_backup->registradores[i] =  banco->registradores[i]; 

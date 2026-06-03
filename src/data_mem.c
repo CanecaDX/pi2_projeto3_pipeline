@@ -112,6 +112,9 @@ void data_memory_save(Memoria_dado *mem, const char *nome_arquivo){
 }
 
 void copiaMemoria(Memoria_dado* memoria_backup, Memoria_dado* memoria){
+	if (!memoria_backup || !memoria) return;
+	memoria_backup->in_data = memoria->in_data;
+	memoria_backup->out_data = memoria->out_data;
     int i;
     for(i = 0; i < DATA_MEM_SIZE; i++){
 		memoria_backup->dado[i] = memoria->dado[i];

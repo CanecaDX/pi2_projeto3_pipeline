@@ -10,6 +10,14 @@
 #include "ULA.h"
 #include "registradores_pipeline.h"
 
+typedef struct Stats{
+ int r, im, j;
+ int arit, desC, mem_d;
+ int contInsEx;
+ int contCiclos;
+ float cpi;
+} Stats;
+
 typedef struct {
     ProgramCounter pc;
     Banco_registradores *regs_bank;
@@ -24,8 +32,10 @@ typedef struct {
     ULA ula;
     int has_executed;
     int just_rewound;
+    Stats *stats;
 } Pipeline;
 
+Stats *stats_create(void);
 Pipeline *pipeline_create(void);
 void buscar(Pipeline *p);
 void decodificar(Pipeline *p);
@@ -35,5 +45,6 @@ int run(Pipeline *p);
 int run_step(Pipeline *p);
 int run_back(Pipeline *p); 
 void copiaSimulador (Pipeline *p_backup, Pipeline* p);
+void programStat(int cond, Pipeline *p, Memoria_instrucao *mem );
 
 #endif

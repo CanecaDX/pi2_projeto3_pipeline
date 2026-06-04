@@ -2,6 +2,20 @@
 #include <stdio.h>
 #include "pipeline.h"
 
+Stats *stats_create(void){
+	Stats *stats = malloc(sizeof(Stats));
+	stats->arit = 0;
+	stats->im = 0;
+	stats->j = 0;
+	stats->desC = 0;
+	stats->r = 0;
+	stats->mem_d = 0; 
+	stats->contCiclos = 0;
+	stats->contInsEx = 0;
+	stats->cpi = 0;
+	return stats;
+}
+
 int mem_wb_empty(Pipeline *p){
 
     if (p->mem_wb.instrucao == 0 &&
@@ -80,6 +94,7 @@ Pipeline *pipeline_create(){
     Pipeline *p = calloc(1, sizeof(Pipeline));
     if (!p) return NULL;
 
+	p->stats = stats_create();
     p->regs_bank = registers_create();
     p->mem_data = data_memory_create();
     p->mem_inst = instruction_memory_create();
@@ -89,6 +104,7 @@ Pipeline *pipeline_create(){
     return p;
 }
 void buscar(Pipeline *p){
+	printf("\n");
 	printf("----------- ESTAGIO DE BUSCA ------------  \n");
 	Instrucao *instr_lida = p->mem_inst->instrucao + p->pc.pc_index;
 	printf("INSTRUÇÃO BUSCADA: ");
@@ -102,6 +118,7 @@ void buscar(Pipeline *p){
 }
 
 void decodificar(Pipeline *p){
+	printf("\n");
 	printf("----------- ESTAGIO DE DECODIFICACAO ------------  \n");
 	p->decoded_inst = decode(p->bi_di.instrucao);
 	printf("INSTRUÇÃO DECODIFICADA:\n");
@@ -131,6 +148,7 @@ void decodificar(Pipeline *p){
 }
 
 void executar(Pipeline *p){
+	printf("\n");
 	printf("----------- ESTAGIO DE EXECUCAO ------------  \n");
 	printf("INSTRUÇÃO NO ESTAGIO DE EXECUÇÃO:  ");
 	print_binary(p->di_ex.instrucao);
@@ -170,6 +188,7 @@ void executar(Pipeline *p){
 }
 
 void acesso_memoria(Pipeline *p){
+	printf("\n");
 	printf("----------- ESTAGIO DE ACESSO A MEMORIA ------------  \n");
 	printf("INSTRUÇÃO NO ESTAGIO DE ACESSO A MEMORIA:  ");
 	print_binary(p->ex_mem.instrucao);
@@ -200,6 +219,7 @@ void acesso_memoria(Pipeline *p){
 }
 
 void write_back(Pipeline *p){
+	printf("\n");
 	printf("----------- ESTAGIO DE WRITE BACK ------------  \n");
 	printf("INSTRUÇÃO NO ESTAGIO DE WRITE BACK:  ");
 	print_binary(p->mem_wb.instrucao);
@@ -217,10 +237,14 @@ void write_back(Pipeline *p){
 	printf("RD: %d \n", p->mem_wb.rd);
 	p->regs_bank->in_regs.write_reg = p->mem_wb.RegWrite;
 	p->regs_bank->out_regs = ex_registers(p->regs_bank->in_regs, p->regs_bank);
+	p->stats->contInsEx++;
+	programStat(0, p, p->mem_inst);
 }
 
 int run_step(Pipeline *p){
-
+	
+	p->stats->contCiclos++;
+	
     if (!mem_wb_empty(p)) {
         write_back(p);
     }
@@ -270,4 +294,48 @@ void copiaSimulador (Pipeline* p_backup, Pipeline* p){
 	 p_backup->ula = p->ula;
 	 p_backup->has_executed = p->has_executed;
 	 p_backup->just_rewound = p->just_rewound;
+}
+
+void programStat(int cond, Pipeline *p, Memoria_instrucao *mem ){
+	
+	int count = mem ? mem->loaded_count : 0;
+	
+	if(cond != 13){
+			Decoded d = decode(p->mem_wb.instrucao);
+			if(d.type == TYPE_R){
+				p->stats->r++;
+			}else if(d.type == TYPE_I){
+				p->stats->im++;
+			}else{
+				p->stats->j++;	
+			}	
+				
+			if(d.type == TYPE_I && (d.opcode == 0xB || d.opcode == 0xF))
+				p->stats->mem_d++;
+					
+			if(d.type == TYPE_I && d.opcode == 0x8)
+				p->stats->desC++;
+					
+			if((d.type == TYPE_R || d.type == TYPE_I) && (d.opcode != 0x8 && d.opcode != 0xB && d.opcode != 0xF))
+				p->stats->arit++;
+			
+			p->stats->cpi = (float)p->stats->contCiclos / (float)p->stats->contInsEx;		
+	}			
+
+	if(cond == 13){ //exibe stats
+			printf("\n%d instruções carregadas\n", count);	
+			printf("\nInstruções Executadas: %d\n", p->stats->contInsEx);
+			printf("\nCiclos Executados: %d\n", p->stats->contCiclos);
+			printf("\nCPI MÉDIO: %.2f\n", p->stats->cpi);
+			printf("\nTIPOS");
+			printf("\n%d instruções do tipo R", p->stats->r);
+			printf("\n%d instruções do tipo I", p->stats->im);
+			printf("\n%d instruções do tipo J", p->stats->j);
+			printf("\n");
+			printf("\nCLASSES");
+			printf("\n%d operações de lógica e aritimética;", p->stats->arit);
+			printf("\n%d operações de desvio incodicional;", p->stats->j);
+			printf("\n%d operações de desvio condicional;", p->stats->desC);
+			printf("\n%d operações de transferência de dados.", p->stats->mem_d);
+	}
 }

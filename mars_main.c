@@ -120,7 +120,7 @@ int main(){
                     printf("Não existem instruções na memória ainda. Para exibir as estatísticas, carregue instruções primeiro.\n");
                     break;
                 }
-				exibeEst(p->mem_inst);
+				programStat(13, p, p->mem_inst);
             break;
             default: printf("\nOpção inválida!"); break;
         }

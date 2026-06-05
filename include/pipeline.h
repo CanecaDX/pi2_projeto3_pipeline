@@ -41,10 +41,11 @@ void buscar(Pipeline *p);
 void decodificar(Pipeline *p);
 void executar(Pipeline *p);
 void acesso_memoria(Pipeline *p);
-int run(Pipeline *p);
-int run_step(Pipeline *p);
-int run_back(Pipeline *p); 
+void run(Pipeline *p);
+void run_step(Pipeline *p);
 void copiaSimulador (Pipeline *p_backup, Pipeline* p);
 void programStat(int cond, Pipeline *p, Memoria_instrucao *mem );
+void reset_all(Pipeline *p);
+void reset_run(Pipeline *p);
 
 #endif

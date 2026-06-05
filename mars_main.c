@@ -21,8 +21,8 @@ int main(){
     do{
         printf("\n------------------------------------");
         printf("\n0_ Fechar programa");
-        printf("\n1_ Carregar arquivo de memória de dados (.dat)");
-        printf("\n2_ Carregar arquivo de memória de instruções (.mem)");
+        printf("\n1_ Carregar arquivo de memória de instruções (.mem)");
+        printf("\n2_ Carregar arquivo de memória de dados (.dat)");
         printf("\n3_ Mostrar dados na memória de dados");
         printf("\n4_ Mostrar dados na memória de instruções");
         printf("\n5_ Mostrar dados no banco de registradores");
@@ -34,20 +34,14 @@ int main(){
         printf("\n11_ Rodar 1 instrução");
         printf("\n12_ Voltar 1 instrução");
         printf("\n13_ Exibir estatísticas");
+        printf("\n14_ Resetar simulador");
         printf("\n------------------------------------");
         printf("\nInforme a opção desejada: ");
         scanf("%d", &op);
 
         switch(op){
-            case 0: printf("\nEncerrando simulador.."); break;
+            case 0: printf("\nEncerrando simulador..\n"); break;
             case 1: {
-                char data_name[128];
-                printf("\nInforme o arquivo .dat: ");
-                scanf("%127s", data_name);
-                data_memory_load(p->mem_data, data_name);
-                break;
-            }
-            case 2: {
                 char mem_name[128];
                 printf("\nInforme o arquivo .mem: ");
                 scanf("%127s", mem_name);
@@ -62,6 +56,13 @@ int main(){
                     p->just_rewound = 0;
                 }
                 break;
+            }
+            case 2: {
+                char data_name[128];
+                printf("\nInforme o arquivo .dat: ");
+                scanf("%127s", data_name);
+                data_memory_load(p->mem_data, data_name);
+            break;
             }
             case 3: data_memory_print(p->mem_data); break;
             case 4: print_instruction_memory(p->mem_inst); break;
@@ -122,6 +123,10 @@ int main(){
                 }
 				programStat(13, p, p->mem_inst);
             break;
+
+            case 14: reset_all(p); printf("\nSimulador resetado...\n");
+            break;
+
             default: printf("\nOpção inválida!"); break;
         }
     }while(op != 0);

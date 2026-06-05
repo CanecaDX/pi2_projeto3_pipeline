@@ -16,6 +16,7 @@ Stats *stats_create(void){
 	return stats;
 }
 
+
 int mem_wb_empty(Pipeline *p){
 
     if (p->mem_wb.instrucao == 0 &&
@@ -241,7 +242,12 @@ void write_back(Pipeline *p){
 	programStat(0, p, p->mem_inst);
 }
 
-int run_step(Pipeline *p){
+void run_step(Pipeline *p){
+
+	if(p->mem_inst->loaded_count == 0){
+		printf("Não há instruções carregadas na memória! Para rodar uma instrução carregue instruções primeiro.\n");
+		return;
+	}
 	
 	p->stats->contCiclos++;
 	
@@ -259,26 +265,43 @@ int run_step(Pipeline *p){
     }
 
     buscar(p);
-    return 0;
+    return;
 }
 
-int run(Pipeline *p){
+void run(Pipeline *p){
     int status = 0;
-    if (!p || !p->mem_inst) return -1;
     if (p->mem_inst->loaded_count == 0) {
         printf("Não há instruções carregadas na memória. Para rodar um programa, carregue instruções primeiro.\n");
-        return 1;
+        return;
     }
-    while ((status = run_step(p)) == 0) {
+    while (p->pc.pc_index < p->mem_inst->loaded_count) {
+		run_step(p);
     }
-    printf("Programa finalizado!");
-    p->pc.pc_index = 0;
-    return status;
+    printf("\nPrograma finalizado!");
+	reset_run(p);
+    return;
 }
 
-int run_back(Pipeline *p){
-    (void)p;
-    return -1;
+void reset_run(Pipeline *p){
+	p->pc.pc_index = 0;
+
+	for(int i = 0; i < 8; i++){
+		p->regs_bank->registradores[i] = 0;
+	}
+
+	return;
+}
+
+void reset_all(Pipeline *p){
+
+	reset_run(p);
+
+	for(int i = 0; i < 265; i++){
+		p->mem_inst->instrucao[i].instr = 0;
+		p->mem_data->dado[i] = 0;
+	}
+
+	p->mem_inst->loaded_count = 0;
 }
 
 void copiaSimulador (Pipeline* p_backup, Pipeline* p){

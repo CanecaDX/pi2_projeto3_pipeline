@@ -138,6 +138,7 @@ void decodificar(Pipeline *p){
 
 	p->regs_bank->in_regs.reg_base1 = p->decoded_inst.rs;
 	p->regs_bank->in_regs.reg_base2 = p->decoded_inst.rt;
+	p->regs_bank->in_regs.write_reg = 0;
 	p->regs_bank->out_regs = ex_registers(p->regs_bank->in_regs, p->regs_bank);
 
 	set_di_ex(&p->di_ex, p->bi_di.pc, p->bi_di.instrucao, p->decoded_inst.opcode, p->decoded_inst.rt,
@@ -326,7 +327,7 @@ void programStat(int cond, Pipeline *p, Memoria_instrucao *mem ){
 	if(cond != 13){
 			Decoded d = decode(p->mem_wb.instrucao);
 			if(d.type == TYPE_R){
-				p->stats->r++;
+				p->stats->r++;https://meet.google.com/dip-wmxo-vwm
 			}else if(d.type == TYPE_I){
 				p->stats->im++;
 			}else{

@@ -24,7 +24,7 @@ OBJS := $(SRCS:.c=.o)
 all: $(APP)
 
 $(APP): $(OBJS)
-	$(CC) $(OBJS) -o $@
+	$(CC) $(OBJS) -o $@ -lpanel -lncurses
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

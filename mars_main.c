@@ -1,14 +1,120 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "decoder.h"
 #include "pipeline.h"
 
     
 int main(){
-    int op;
     Pipeline *p = pipeline_create();
     Pipeline  *p_backup = pipeline_create();
+    WINDOW *pipeline_data = newwin(20,20,0,0);
+
+    //Iniciando ncurses
+    initscr();
+    noecho();
+    cbreak();
+
+    int yMAX, xMAX, h_menu = 18, w_menu = 60, start_x, start_y, op, marc = 0;
+
+    //matriz com as opções do menu
+    char options[][32] = {
+        "Fechar simulador",
+        "Carregar memória de instruções",
+        "Carregar memória de dados",
+        "Ver memória de instruções", 
+        "Ver instruções em formato assembly",
+        "Ver memória de dados",
+        "Ver banco de registradores",
+        "Ver todo o simulador",
+        "Salvar assembly",
+        "Backup memória de dados",
+        "Rodar programa",
+        "Rodar 1 instrução", 
+        "Voltar 1 instrução", 
+        "Exibir estatísticas",
+        "Resetar simulador"
+    };
+
+    getmaxyx(stdscr, yMAX, xMAX);
+
+    WINDOW *closin = newwin(20, 60, ((yMAX - 20)/2), ((xMAX - 60)/2));
+
+    //pega o tamanho da tela
+
+    start_x = (xMAX - w_menu) / 2;
+    start_y = (yMAX - h_menu) / 2;
+
+    WINDOW *menu = newwin(h_menu, w_menu, start_y, 1);
+    box(menu, 0, 0);
+    refresh();
+    wrefresh(menu);
+    keypad(menu, true);
+
+    int num_options = sizeof(options) / sizeof(options[0]);
+
+while (1) {
+    werase(menu);
+    box(menu, 0, 0);
+
+    // Draw menu options
+    for (int i = 0; i < num_options; i++) {
+        if (i == marc)
+            wattron(menu, A_REVERSE);
+
+        mvwprintw(menu, i + 2, 2, "%s", options[i]);
+
+        if (i == marc)
+            wattroff(menu, A_REVERSE);
+    }
+
+    wrefresh(menu);
+
+    op = wgetch(menu);
+
+    switch (op) {
+        case KEY_UP:
+            marc--;
+            if (marc < 0)
+                marc = num_options - 1;
+            break;
+
+        case KEY_DOWN:
+            marc++;
+            if (marc >= num_options)
+                marc = 0;
+            break;
+
+        case '\n':  // Enter key
+            switch (marc) {
+                case 0:
+                    mvwprintw(closin, 1, 1, "Fechando simulador... pressione qualquer tecla.");
+                    wrefresh(closin);
+
+                    wgetch(closin); 
+
+                    delwin(closin);
+                    delwin(menu);
+                    endwin();
+                    return 0;
+
+                case 1:
+                    // Carregar memória de instruções
+                    break;
+
+                case 2:
+                    // Carregar memória de dados
+                    break;
+
+                // add the remaining cases here
+            }
+            break;
+    }
+}
+
+    getch();
+    endwin();
 
     if (!p) {
         printf("\nFalha ao alocar monociclo.");

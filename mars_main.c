@@ -16,45 +16,70 @@ int main(){
     noecho();
     cbreak();
 
-    int yMAX, xMAX, h_menu = 18, w_menu = 60, start_x, start_y, op, marc = 0;
+    int yMAX, xMAX;
+    getmaxyx(stdscr, yMAX, xMAX); //pega dimensões máximas da tela
+
+    //int start_x = (xMAX - w) / 2; -> como centralizar janela em largura
+    //int start_y = (yMAX - h) / 2; -> como centralizar janela em altura
+
+    //caracteristicas menu
+    int h_menu = 18, w_menu = 60, op, marc = 0;
+
+    //caracteristicas registradores
+    int h_regs = 10, w_regs = (xMAX/2) -3;
+    
+    //caracteristicas log
+    int h_log = 18, w_log = 60;
+
+    //caracteristicas execução
+    int h_exec = yMAX-(h_regs+2), w_exec = (xMAX/2) - 3; 
+
+
+    //JANELAS DO PROGRAMA
+    WINDOW *exec = newwin(h_exec, w_exec, h_regs+2, (xMAX/2 + 1));
+    WINDOW *regs = newwin(h_regs, w_regs, 1, (xMAX/2 + 1));
+    WINDOW *log = newwin((yMAX/2 - 1), w_log, (yMAX - h_log), 1);
+    WINDOW *menu = newwin((yMAX/2 - 1), w_menu, 1, 1);
+
 
     //matriz com as opções do menu
-    char options[][32] = {
+    char options[][34] = {
         "Fechar simulador",
         "Carregar memória de instruções",
         "Carregar memória de dados",
         "Ver memória de instruções", 
         "Ver instruções em formato assembly",
         "Ver memória de dados",
-        "Ver banco de registradores",
-        "Ver todo o simulador",
         "Salvar assembly",
         "Backup memória de dados",
         "Rodar programa",
         "Rodar 1 instrução", 
         "Voltar 1 instrução", 
-        "Exibir estatísticas",
         "Resetar simulador"
     };
 
-    getmaxyx(stdscr, yMAX, xMAX);
-
-    WINDOW *closin = newwin(20, 60, ((yMAX - 20)/2), ((xMAX - 60)/2));
-
-    //pega o tamanho da tela
-
-    start_x = (xMAX - w_menu) / 2;
-    start_y = (yMAX - h_menu) / 2;
-
-    WINDOW *menu = newwin(h_menu, w_menu, start_y, 1);
-    box(menu, 0, 0);
-    refresh();
-    wrefresh(menu);
-    keypad(menu, true);
-
+    //quantidade de opções do menu
     int num_options = sizeof(options) / sizeof(options[0]);
 
-while (1) {
+    // para mostrar tamanho máximo da tela
+    //mvwprintw(menu, 1, 1, "yMAX = %d, xMAX = %d", yMAX, xMAX);
+    //wrefresh(menu);
+
+    //caixas das janelas
+    box(menu, 0, 0);
+    box(exec, 0, 0);
+    box(regs, 0, 0);
+    box(log, 0, 0);
+
+    //exibição das janelas
+    refresh();
+    wrefresh(menu);
+    wrefresh(exec);
+    wrefresh(regs);
+    wrefresh(log);
+    keypad(menu, true);
+
+    while (1) {
     werase(menu);
     box(menu, 0, 0);
 
@@ -89,13 +114,13 @@ while (1) {
         case '\n':  // Enter key
             switch (marc) {
                 case 0:
-                    mvwprintw(closin, 1, 1, "Fechando simulador... pressione qualquer tecla.");
-                    wrefresh(closin);
+                    //mvwprintw(closin, 1, 1, "Fechando simulador... pressione qualquer tecla.");
+                    //wrefresh(closin);
 
-                    wgetch(closin); 
+                    //wgetch(closin); 
 
-                    delwin(closin);
-                    delwin(menu);
+                    //delwin(closin);
+                    //delwin(menu);
                     endwin();
                     return 0;
 

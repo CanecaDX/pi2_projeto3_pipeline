@@ -15,14 +15,13 @@ Banco_registradores *registers_create(){
     return regs;
 }
 
-void print_regs(const Banco_registradores *regs){
+void print_regs(Banco_registradores *regs, WINDOW * rewg){
     if (!regs || !regs->registradores) return;
-    printf("\n\n\n");
-    printf("BANCO DE REGISTRADORES: ");
-    for (int i = 0; i < 8; i++){
-        printf("\n$%d = %d", i, (int8_t)(regs->registradores[i]));
+    for (int i = 0; i < 8; i++) {
+        mvwprintw(rewg, i + 1, 2, "$r%-2d = %08X",
+                  i, regs->registradores[i]);
     }
-    printf("\n");
+    wrefresh(rewg);
 }
 
 Out_registers ex_registers(In_registers input, Banco_registradores *regs){

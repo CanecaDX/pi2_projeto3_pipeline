@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <ncurses.h>
 #include "instruction_mem.h"
 #include "decoder.h"
 
@@ -20,7 +21,7 @@ Memoria_instrucao *instruction_memory_create(void){
     return mem;
 }
 
-static int get_mem_file(const char *mem_name, Instrucao *instructions, int *size) {
+int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec) {
     char line[18]; 
     int is_binary = 1, i;
 
@@ -62,7 +63,7 @@ static int get_mem_file(const char *mem_name, Instrucao *instructions, int *size
             }
 
             *size = count;
-            printf("\nMemória de instruções carregada..");
+            mvwprintw(exec, 1, 20, "Informe o arquivo .mem: ");
             fclose(file);
             return 0;
         }
@@ -95,17 +96,17 @@ static int get_mem_file(const char *mem_name, Instrucao *instructions, int *size
     for (int idx = 0; idx < *size; idx++) {
         instructions[idx].instr = raw[idx];
     }
-    printf("\nMemória de instruções carregada..");
+    mvwprintw(exec, 5, 20, "Informe o arquivo .mem: ");
     fclose(file);
     return 0;
 }
  
-Memoria_instrucao *instruction_memory_load_file(const char *mem_name){
+Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec){
     Memoria_instrucao *mem = instruction_memory_create();
     if (!mem) return NULL;
 
     int size = 0;
-    if (get_mem_file(mem_name, mem->instrucao, &size) != 0) {
+    if (get_mem_file(mem_name, mem->instrucao, &size, *exec) != 0) {
         free(mem->instrucao);
         free(mem);
         return NULL;

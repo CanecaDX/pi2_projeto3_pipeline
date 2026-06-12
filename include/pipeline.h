@@ -1,6 +1,8 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
+#include <ncurses.h>
+
 #include "pc.h"
 #include "registers.h"
 #include "instruction_mem.h"
@@ -37,14 +39,15 @@ typedef struct {
 
 Stats *stats_create(void);
 Pipeline *pipeline_create(void);
-void buscar(Pipeline *p);
-void decodificar(Pipeline *p);
-void executar(Pipeline *p);
-void acesso_memoria(Pipeline *p);
-void run(Pipeline *p);
-void run_step(Pipeline *p);
+void buscar(Pipeline *p, WINDOW * exec);
+void decodificar(Pipeline *p, WINDOW * exec);
+void executar(Pipeline *p, WINDOW * exec);
+void acesso_memoria(Pipeline *p, WINDOW * exec);
+void write_back(Pipeline *p, WINDOW * exec, WINDOW * regw);
+void run(Pipeline *p, WINDOW * exec, WINDOW * regw);
+void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw);
 void copiaSimulador (Pipeline *p_backup, Pipeline* p);
-void programStat(int cond, Pipeline *p, Memoria_instrucao *mem );
+void programHead(int cond, Pipeline *p, Memoria_instrucao *mem, WINDOW * regw);
 void reset_all(Pipeline *p);
 void reset_run(Pipeline *p);
 

@@ -1,6 +1,7 @@
 #ifndef REGISTERS_H
 #define REGISTERS_H
 
+#include <ncurses.h>
 #include <stdint.h>
 typedef struct{
 	uint8_t reg_base1;
@@ -24,7 +25,7 @@ typedef struct {
 
 Banco_registradores *registers_create(); 
 Out_registers ex_registers(In_registers input, Banco_registradores *regs);
-void print_regs(const Banco_registradores *regs);
+void print_regs(Banco_registradores *regs, WINDOW *regw);
 void copiaBancoRegistradores(Banco_registradores* banco_backup, Banco_registradores* banco);
 
 

@@ -2,6 +2,7 @@
 #define INSTR_MEM_H
 
 #include <stdint.h>
+#include <ncurses.h>
 
 #define INSTR_MEM_SIZE 256
 
@@ -36,7 +37,8 @@ typedef struct {
 } Memoria_instrucao;
 
 Memoria_instrucao *instruction_memory_create(void);
-Memoria_instrucao *instruction_memory_load_file(const char *mem_name);
+Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec);
+int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec);
 void print_instruction_memory(const Memoria_instrucao *mem);
 void print_binary(uint16_t value);
 void mem_to_asm(Memoria_instrucao *mem);
@@ -44,6 +46,5 @@ void print_asm(Decoded d);
 void exibe1_asm(Memoria_instrucao *mem, int index);
 void exibeTodos_asm(Memoria_instrucao *mem);
 void exibeEst(Memoria_instrucao *mem);
-
 
 #endif

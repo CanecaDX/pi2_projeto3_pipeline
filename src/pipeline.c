@@ -256,17 +256,23 @@ void write_back(Pipeline *p, WINDOW * exec, WINDOW * regw){
     programHead(0, p, p->mem_inst, regw);
 }
 
-void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw){
+void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
 
 	if(p->mem_inst->loaded_count == 0){
-		printf("Não há instruções carregadas na memória! Para rodar uma instrução carregue instruções primeiro.\n");
+        mvwprintw(log, 5, 1, "Carregue instruções na memória primeiro");
+        wrefresh(log);
 		return;
 	}
 	
 	p->stats->contCiclos++;
+
+    werase(log);
+    box(log, 0, 0);
 	
 	werase(exec);
     box(exec, 0, 0);
+
+    wrefresh(log);
 	
     if (!mem_wb_empty(p)) {
         write_back(p, exec, regw);
@@ -285,16 +291,17 @@ void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw){
     return;
 }
 
-void run(Pipeline *p, WINDOW * exec, WINDOW * regw){
+void run(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
     int status = 0;
     if (p->mem_inst->loaded_count == 0) {
-        printf("Não há instruções carregadas na memória. Para rodar um programa, carregue instruções primeiro.\n");
+    mvwprintw(log, 5, 1, "Carregue instruções na memória primeiro!");
+    wrefresh(log);
         return;
     }
     while (p->pc.pc_index < p->mem_inst->loaded_count) {
-		run_step(p, exec, regw);
+		run_step(p, exec, regw, log);
     }
-    printf("\nPrograma finalizado!");
+    mvwprintw(log, 5, 1, "Programa finalizado!");
 	reset_run(p);
     return;
 }

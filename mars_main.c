@@ -45,9 +45,10 @@ int main() {
     // Matriz com  opções do menu
     char options[][40] = {
         "Sair",
-        "Carregar instruções",
         "Carregar dados",
-        "Ver memórias", 
+        "Carregar Instruções",
+        "Memória de dados",
+        "Memória de instruções", 
         "Ver instruções em assembly",
         "Salvar assembly",
         "Backup dados",
@@ -84,18 +85,18 @@ int main() {
         box(menu, 0, 0);
 
         mvwprintw(menu, 1, 1, "[MENU]");
-int itens_por_coluna = 6; // Metade de 12
+        int itens_por_coluna = 6; // Metade de 12
 
     for (int i = 0; i < num_options; i++) {
         // Calcula a linha 
         int linha = i % itens_por_coluna;
         // Calcula a coluna 
         int coluna = i / itens_por_coluna;
-        int pos_x = 2 + (coluna * 40);
+        int pos_x =  2 + (coluna * 35);
         
         if (i == marc) wattron(menu, A_REVERSE);
         
-        mvwprintw(menu, linha + 2, pos_x, "%s", options[i]);
+        mvwprintw(menu, linha + 3, pos_x, "%s", options[i]);
         
         if (i == marc) wattroff(menu, A_REVERSE);
     }
@@ -123,15 +124,30 @@ int itens_por_coluna = 6; // Metade de 12
                         endwin();
                         return 0;
 
-                    case 1: // Carregar memória de instruções
+                    case 1: // Dados
                         echo();
-                        mvwprintw(log, 1, 2, "Informe o nome do arquivo .mem: ");
+                        mvwprintw(log, 3, 1, "Informe o nome do arquivo .dat: ");
                         wrefresh(log);
-                        wgetnstr(log, mem_name, 127); 
+                        wgetnstr(log, data_name, 127); 
                         noecho();
                         
                         werase(log); 
                         box(log, 0, 0);
+                        
+                        data_memory_load(p->mem_data, data_name, log);
+                        werase(log);
+                        box(log, 0, 0);
+                        break;
+                    
+                    case 2: // Instruções
+                        echo();
+                        mvwprintw(log, 3, 1, "Informe o nome do arquivo .mem: ");
+                        wrefresh(log);
+                        wgetnstr(log, mem_name, 127);
+                        werase(log); 
+                        box(log, 0, 0); 
+                        noecho();
+                        
                         
                         new_mem = instruction_memory_load_file(mem_name, &log);
                         if (new_mem) {
@@ -142,69 +158,60 @@ int itens_por_coluna = 6; // Metade de 12
                             p->mem_inst = new_mem;
                             p->has_executed = 0;
                             p->just_rewound = 0;
-                            mvwprintw(log, 1, 2, "Memória de instruções carregada com sucesso!");
+                            mvwprintw(log, 5, 1, "Memória de instruções carregada com sucesso!");
                             programHead(13, p, p->mem_inst, regw); // Atualiza cabecalho
                             wrefresh(regw);
                         } else {
-                            mvwprintw(log, 1, 2, "Erro ao carregar a memória de instruções.");
+                            mvwprintw(log, 5, 1, "Erro ao carregar a memória de instruções!");
 
                         }
                         wrefresh(log);
                         break;
-
-                    case 2: // Carregar memória de dados
-                        echo();
-                        mvwprintw(log, 1, 2, "Informe o nome do arquivo .dat: ");
-                        wrefresh(log);
-                        wgetnstr(log, data_name, 127); 
-                        noecho();
                         
-                        werase(log); 
-                        box(log, 0, 0);
-                        
-                        data_memory_load(p->mem_data, data_name);
-                        mvwprintw(log, 1, 2, "Memória de dados carregada com sucesso!");
-                        wrefresh(log);
-                        break;
-                    
                     case 3: // Ver memórias
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
-                            mvwprintw(exec, 1, 2, "Carregue instruções na memória primeiro.");
+                            mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
                         } else {
-                            //print_instruction_memory(p->mem_inst, exec);
+                            //print_memory(p->mem_inst, mem);
                         }
-                        wrefresh(exec);
+                        wrefresh(log);
+
+                    break;
+
+                    case 4:
+                        
+                    break;
+
+
+                    case 5: // Ver instruções em formato assembly
+                        if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
+                            mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
+                        } else {
+                            //exibeTodos_asm(p->mem_inst, mem);
+                        }
+                        wrefresh(log);
                         break;
 
-                    case 4: // Ver instruções em formato assembly
+                    case 6: // Salvar assembly
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
-                            mvwprintw(exec, 1, 2, "Carregue instruções na memória primeiro.");
-                        } else {
-                            //exibeTodos_asm(p->mem_inst, exec);
-                        }
-                        wrefresh(exec);
-                        break;
-
-                    case 5: // Salvar assembly
-                        if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
-                            mvwprintw(exec, 1, 2, "Sem instruções para salvar. Carregue-as primeiro.");
+                            mvwprintw(log, 3, 1, "Sem instruções para salvar. Carregue-as primeiro.");
                         } else {
                             mem_to_asm(p->mem_inst);
-                            mvwprintw(exec, 1, 2, "Salvo no arquivo 'program.asm' com sucesso!");
+                            mvwprintw(log, 3, 1, "Salvo no arquivo 'program.asm' com sucesso!");
                         }
-                        wrefresh(exec);
+                        wrefresh(log);
                         break;
 
-                    case 6: // Backup memória de dados
+                    case 7: // Backup memória de dados
                         data_memory_save(p->mem_data, "output_dados.dat");
-                        mvwprintw(log, 1, 2, "Salvo no arquivo 'output_dados.dat' com sucesso!");
+                        mvwprintw(log, 3, 1, "Salvo no arquivo 'output_dados.dat' com sucesso!");
                         wrefresh(log);
                         break;
 
-                    case 7: // Rodar programa
-                        run(p, exec, regw);
+                    case 8: // Rodar programa
+                        run(p, exec, regw, log);
                         p->just_rewound = 1;
-                        mvwprintw(log, 1, 2, "PPrograma finalizado!..");
+                        mvwprintw(log, 3, 1, "Programa finalizado!..");
                         print_regs(p->regs_bank, regw);
 
                         programHead(13, p, p->mem_inst, regw); // Atualiza stats
@@ -213,8 +220,8 @@ int itens_por_coluna = 6; // Metade de 12
                         wrefresh(log);
                         break;
 
-                    case 8: // Rodar 1 instrução
-                        run_step(p, exec, regw);
+                    case 9: // Rodar 1 instrução
+                        run_step(p, exec, regw, log);
                         print_regs(p->regs_bank, regw);
                         programHead(13, p, p->mem_inst, regw); // Atualiza stats
                         wrefresh(exec);
@@ -222,15 +229,15 @@ int itens_por_coluna = 6; // Metade de 12
                         wrefresh(log);
                         break;
 
-                    case 9: // Voltar 1 instrução
+                    case 10: // Voltar 1 instrução
                         if (!p->has_executed) {
-                            mvwprintw(log, 1, 2, "Ao menos uma instrução deve ter sido executada.");
+                            mvwprintw(log, 3, 1, "Ao menos uma instrução deve ter sido executada.");
                         } else if (p->just_rewound) {
-                            mvwprintw(log, 1, 2, "Não é possível voltar duas instruções seguidas.");
+                            mvwprintw(log, 3, 1, "Não é possível voltar duas instruções seguidas.");
                         } else {
                             copiaSimulador(p, p_backup);
                             p->just_rewound = 1;
-                            mvwprintw(log, 1, 2, "VOLTOU 1 INSTRUÇÃO! PC ESTÁ EM: %d", p->pc.pc_index);
+                            mvwprintw(log, 3, 1, "VOLTOU 1 INSTRUÇÃO! PC ESTÁ EM: %d", p->pc.pc_index);
                             print_regs(p->regs_bank, regw);
                             programHead(13, p, p->mem_inst, regw);
                         }
@@ -239,9 +246,9 @@ int itens_por_coluna = 6; // Metade de 12
                         wrefresh(log);
                         break;
 
-                    case 10: // Resetar simulador
+                    case 11: // Resetar simulador
                         reset_all(p);
-                        mvwprintw(log, 1, 2, "Simulador resetado com sucesso!");
+                        mvwprintw(log, 3, 1, "Simulador resetado com sucesso!");
                         werase(log); 
                         box(log, 0, 0); // Limpa as estatísticas visuais
                         programHead(13, p, p->mem_inst, regw);

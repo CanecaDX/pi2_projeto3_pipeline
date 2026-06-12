@@ -16,12 +16,13 @@ Memoria_dado *data_memory_create(void){
 	return mem;
 }
 
-void data_memory_load(Memoria_dado *mem, const char *nome_arquivo){
+void data_memory_load(Memoria_dado *mem, const char *nome_arquivo, WINDOW * log){
 	if (!mem || !mem->dado) return;
 
 	FILE *file = fopen(nome_arquivo, "rb");
 	if (file == NULL) {
-		printf("Erro ao abrir o arquivo");
+        	mvwprintw(log, 5, 1, "Erro ao abrir o arquivo!");
+			wrefresh(log);
 		return;
 	}
 
@@ -54,7 +55,8 @@ void data_memory_load(Memoria_dado *mem, const char *nome_arquivo){
 			if (aux <= 127 && aux >= -128) {
 				mem->dado[cont] = (int8_t)aux;
 			} else {
-				printf("\nDado maior do que suportado pelo programa, ele será zerado na memória.");
+                    mvwprintw(log, 3, 1, "Dado maior do que suportado! Ele será zerado na memória.");
+					wrefresh(log);
 				mem->dado[cont] = 0;
 			}
 			cont++;
@@ -63,8 +65,8 @@ void data_memory_load(Memoria_dado *mem, const char *nome_arquivo){
 			mem->dado[i] = 0;
 		}
 	}
-
-	printf("\nMemoria carregada com sucesso...");
+	mvwprintw(log, 5, 1, "Memória de dados carregada com sucesso!");
+	wrefresh(log);
 	fclose(file);
 }
 
@@ -81,7 +83,6 @@ void data_memory_print(const Memoria_dado *mem){
 Out_data_mem ex_data_mem(In_data_mem input, Memoria_dado *mem){
 	Out_data_mem output = {0};
 	if (input.adress < 0 || input.adress >= DATA_MEM_SIZE) {
-		printf("\nNão é acessado valor na memória, resultado fora do limite de endereçamento");
 		return output;
 	}
 	if (input.read_mem) {

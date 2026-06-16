@@ -27,7 +27,7 @@ typedef struct {
 
 Memoria_dado *data_memory_create(void);
 void data_memory_load(Memoria_dado *mem, const char *nome_arquivo, WINDOW * log);
-void data_memory_print(const Memoria_dado *mem);
+void data_memory_print(const Memoria_dado *mem, WINDOW *mem2);
 Out_data_mem ex_data_mem(In_data_mem input, Memoria_dado *mem);
 void data_memory_save(Memoria_dado *mem, const char *nome_arquivo);
 void copiaMemoria(Memoria_dado* memoria_backup, Memoria_dado* memoria);

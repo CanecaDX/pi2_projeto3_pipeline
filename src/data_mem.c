@@ -70,14 +70,31 @@ void data_memory_load(Memoria_dado *mem, const char *nome_arquivo, WINDOW * log)
 	fclose(file);
 }
 
-void data_memory_print(const Memoria_dado *mem){
+void data_memory_print(const Memoria_dado *mem, WINDOW *mem2){
 	if (!mem || !mem->dado) return;
-	printf("\n\n\n");
-	printf("MEMÓRIA DE DADOS: ");
-	for (int i = 0; i < DATA_MEM_SIZE; i++) {
-		printf("\n[%d] : %d", i, mem->dado[i]);
-	}
-	printf("\n");
+	
+	int max_y, max_x;
+    getmaxyx(mem2, max_y, max_x);
+	mvwprintw(mem2, 1, 2, "MEMORIA DE DADOS: ");
+	
+	int y = 3;
+    int x = 2;
+	
+	for(int i = 0; i < DATA_MEM_SIZE; i++){
+        /* Se chegou ao final da área útil,
+           começa uma nova coluna */
+        if(y >= max_y - 2){
+            y = 3;
+            x += 35;
+        }
+        /* Se não cabe mais coluna, para */
+        if(x + 35 >= max_x)
+            break;
+
+        mvwprintw(mem2, y, x, "[%d] : %d ", i, mem->dado[i]);
+        y++;
+    }
+	
 }
 
 Out_data_mem ex_data_mem(In_data_mem input, Memoria_dado *mem){

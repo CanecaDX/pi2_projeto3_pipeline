@@ -37,7 +37,8 @@ int main() {
 
     // JANELAS DO PROGRAMA
     WINDOW *menu = newwin((yMAX - (yMAX - h_menu - 1) - 2), (xMAX - w_exec - 3), 1, 1);
-    WINDOW *mem = newwin((yMAX - h_menu), (xMAX - w_exec - 3), h_menu, 1);
+    WINDOW *regp = newwin((yMAX - h_menu), (xMAX - w_exec - 3), h_menu, 1);
+    WINDOW *mem2 = newwin(yMAX, xMAX, 0, 0);
     WINDOW *log = newwin((yMAX - h_regs - h_exec - 1), w_exec, (h_regs + h_exec + 1), (xMAX / 2 - 13));
     WINDOW *regw = newwin(h_regs, w_exec, 1, (xMAX / 2 - 13));
     WINDOW *exec = newwin(h_exec, w_exec, h_regs + 1, (xMAX / 2 - 13));
@@ -47,8 +48,8 @@ int main() {
         "Sair",
         "Carregar dados",
         "Carregar Instruções",
-        "Memória de dados",
-        "Memória de instruções", 
+        "Memória de instruções",
+        "Memória de dados", 
         "Ver instruções em assembly",
         "Salvar assembly",
         "Backup dados",
@@ -63,7 +64,8 @@ int main() {
     // Caixas das janelas
     box(menu, 0, 0);
     box(exec, 0, 0);
-    box(mem, 0, 0);
+    box(regp, 0, 0);
+    box(mem2, 0, 0);
     box(regw, 0, 0);
     box(log, 0, 0);
 
@@ -73,10 +75,11 @@ int main() {
     wrefresh(exec);
     //ja mostra no painel assim que inicia 
     programHead(13, p, p->mem_inst, regw);
-    mvwprintw(mem, 1, 1, "[MEMORIAS]");
-    wrefresh(mem);
+    //mvwprintw(regp, 1, 1, "[MEMORIAS]");
+    wrefresh(regp);
     wrefresh(regw);
     mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
+    //mvwprintw(log, 3, 1, "altura: %d || largura: %d", yMAX, xMAX); 37 e 162
     wrefresh(log);
     keypad(menu, true);
 
@@ -104,7 +107,9 @@ int main() {
 
         op = wgetch(menu);
 
-        switch (op) {
+        switch (op) {        
+			wclear(log);
+			wrefresh(log);
             case KEY_UP:
                 marc--;
                 if (marc < 0) marc = num_options - 1;
@@ -125,6 +130,7 @@ int main() {
                         return 0;
 
                     case 1: // Dados
+						wrefresh(log);
                         echo();
                         mvwprintw(log, 3, 1, "Informe o nome do arquivo .dat: ");
                         wrefresh(log);
@@ -140,6 +146,7 @@ int main() {
                         break;
                     
                     case 2: // Instruções
+						wrefresh(log);
                         echo();
                         mvwprintw(log, 3, 1, "Informe o nome do arquivo .mem: ");
                         wrefresh(log);
@@ -168,26 +175,79 @@ int main() {
                         wrefresh(log);
                         break;
                         
-                    case 3: // Ver memórias
+                    case 3: // Ver memória instrução
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                             mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
                         } else {
-                            //print_memory(p->mem_inst, mem);
+							erase();
+							clear();
+							refresh();
+							print_instruction_memory(p->mem_inst, mem2);
+							wrefresh(mem2);						
+							wgetch(mem2);
+							
+							werase(mem2);
+
+							touchwin(menu);
+							touchwin(regp);
+							touchwin(log);
+							touchwin(regw);
+							touchwin(exec);
+
+							wrefresh(menu);
+							wrefresh(regp);
+							wrefresh(log);
+							wrefresh(regw);
+							wrefresh(exec);      
                         }
-                        wrefresh(log);
-
-                    break;
-
+						break;
                     case 4:
-                        
-                    break;
+						erase();
+						clear();
+						refresh();
+						data_memory_print(p->mem_data, mem2);  
+						wrefresh(mem2);
+						wgetch(mem2);
+		
+						werase(mem2);
 
+						touchwin(menu);
+						touchwin(regp);
+						touchwin(log);
+						touchwin(regw);
+						touchwin(exec);
 
+						wrefresh(menu);
+						wrefresh(regp);
+						wrefresh(log);
+						wrefresh(regw);
+						wrefresh(exec);       
+						break;
                     case 5: // Ver instruções em formato assembly
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                             mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
                         } else {
-                            //exibeTodos_asm(p->mem_inst, mem);
+							erase();
+							clear();
+							refresh();
+                            exibeTodos_asm(p->mem_inst, mem2);
+                            
+                            wrefresh(mem2);						
+							wgetch(mem2);
+							
+							werase(mem2);
+
+							touchwin(menu);
+							touchwin(regp);
+							touchwin(log);
+							touchwin(regw);
+							touchwin(exec);
+
+							wrefresh(menu);
+							wrefresh(regp);
+							wrefresh(log);
+							wrefresh(regw);
+							wrefresh(exec);      
                         }
                         wrefresh(log);
                         break;

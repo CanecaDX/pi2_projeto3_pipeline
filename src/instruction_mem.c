@@ -116,20 +116,44 @@ Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **e
     return mem;
 }
 
-void print_instruction_memory(const Memoria_instrucao *mem){
-    if (!mem || !mem->instrucao) return;
-    printf("\n\n\n");
-    printf("MEMÓRIA DE INSTRUÇÕES: ");
-    for (int i = 0; i < INSTR_MEM_SIZE; i++){
-        printf("\nInstr[%d] = ", i);
-        print_binary(mem->instrucao[i].instr);
+void print_instruction_memory(const Memoria_instrucao *mem, WINDOW *mem2)
+{
+    if (!mem || !mem->instrucao)
+        return;
+
+    int max_y, max_x;
+    getmaxyx(mem2, max_y, max_x);
+
+    mvwprintw(mem2, 1, 2, "MEMORIA DE INSTRUCOES:");
+
+    int y = 3;
+    int x = 2;
+
+    for(int i = 0; i < INSTR_MEM_SIZE; i++){
+        /* Se chegou ao final da área útil,
+           começa uma nova coluna */
+        if(y >= max_y - 2){
+            y = 3;
+            x += 35;
+        }
+
+        /* Se não cabe mais coluna, para */
+        if(x + 35 >= max_x)
+            break;
+
+        mvwprintw(mem2, y, x, "Instr[%03d] = ", i);
+
+        print_binary(mem->instrucao[i].instr, mem2, y, x + 13);
+
+        y++;
     }
-    printf("\n");
 }
 
-void print_binary(uint16_t value){
-    for(int i = 15; i >= 0; i--)
-        printf("%d", (value >> i) & 1);
+void print_binary(uint16_t value, WINDOW *mem2, int y, int x){
+    for(int i = 15; i >= 0; i--) {
+        mvwprintw(mem2, y, x + (15 - i), "%d",
+                  (value >> i) & 1);
+    }
 }
 
 void mem_to_asm(Memoria_instrucao *mem) {
@@ -187,42 +211,42 @@ void mem_to_asm(Memoria_instrucao *mem) {
     fclose(file);
 }
 
-void print_asm(Decoded d){
+void print_asm(Decoded d, WINDOW *mem2, int x, int y){
 	   
         if (d.type == TYPE_R) {
             switch (d.funct) {
                 case 0x0: // add
-                    printf("add $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
+                    mvwprintw(mem2, x, y, "add $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
                     break;
                 case 0x2: // sub
-                    printf("sub $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
+                    mvwprintw(mem2, x, y, "sub $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
                     break;
                 case 0x4: // and
-                    printf("and $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
+                    mvwprintw(mem2, x, y, "and $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
                     break;
                 case 0x5: // or
-                    printf("or $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
+                    mvwprintw(mem2, x, y, "or $%u, $%u, $%u\n", d.rd, d.rs, d.rt);
                     break;
             }
         } else if (d.type == TYPE_I) {
             switch (d.opcode) {
                 case 0x4: // addi
-                    printf("addi $%u, $%u, %d\n", d.rt, d.rs, d.imm);
+                    mvwprintw(mem2, x, y, "addi $%u, $%u, %d\n", d.rt, d.rs, d.imm);
                     break;
                 case 0xB: // lw
-                    printf("lw $%u, %d($%u)\n", d.rt, d.imm, d.rs);
+                    mvwprintw(mem2, x, y, "lw $%u, %d($%u)\n", d.rt, d.imm, d.rs);
                     break;
                 case 0xF: // sw
-                    printf("sw $%u, %d($%u)\n", d.rt, d.imm, d.rs);
+                    mvwprintw(mem2, x, y, "sw $%u, %d($%u)\n", d.rt, d.imm, d.rs);
                     break;
                 case 0x8: // beq
-                    printf("beq $%u, $%u, %d\n", d.rt, d.rs, d.imm);
+                    mvwprintw(mem2, x, y, "beq $%u, $%u, %d\n", d.rt, d.rs, d.imm);
                     break;
             }
         } else if (d.type == TYPE_J) {
             switch(d.opcode){
                 case 0x2: // j
-                    printf("j %u\n", d.address);
+                    mvwprintw(mem2, x, y, "j %u\n", d.address);
                     break;
             }
         }
@@ -239,7 +263,7 @@ void exibe1_asm(Memoria_instrucao *mem, int index){
 	
         Instrucao raw = mem->instrucao[index];
         Decoded d = decode(raw.instr);
-		print_asm(d);
+		//print_asm(d);
 			if (d.type == TYPE_R) {
 				switch (d.funct) {
 					case 0x0: // add
@@ -280,20 +304,36 @@ void exibe1_asm(Memoria_instrucao *mem, int index){
 		printf("\n");
 }
 
-void exibeTodos_asm(Memoria_instrucao *mem){
+void exibeTodos_asm(Memoria_instrucao *mem, WINDOW *mem2){
 	
 	int count = mem ? mem->loaded_count : 0;
 	
-	if(!count){
-		printf("Não há instruções carregadas na memória ainda. Para visualizá-las, carregue um arquivo .mem primeiro.");
-		return;
-	}
-	
-	  for (int i = 0; i < count; i++) {
+	int max_y, max_x;
+    getmaxyx(mem2, max_y, max_x);
+
+    mvwprintw(mem2, 1, 2, "INSTRUCOES EM ASSEMBLY:");
+
+    int y = 3;
+    int x = 2;
+      
+       for(int i = 0; i < count; i++){
+        /* Se chegou ao final da área útil,
+           começa uma nova coluna */
+        if(y >= max_y - 2){
+            y = 3;
+            x += 35;
+        }
+
+        /* Se não cabe mais coluna, para */
+        if(x + 35 >= max_x)
+            break;
+
         Instrucao raw = mem->instrucao[i];
         Decoded d = decode(raw.instr);
-        print_asm(d);
-      }
+        print_asm(d, mem2, y, x);
+
+        y++;
+    }
 }
 
 void exibeEst(Memoria_instrucao *mem){

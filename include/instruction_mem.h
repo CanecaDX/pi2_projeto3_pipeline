@@ -39,12 +39,12 @@ typedef struct {
 Memoria_instrucao *instruction_memory_create(void);
 Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec);
 int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec);
-void print_instruction_memory(const Memoria_instrucao *mem);
-void print_binary(uint16_t value);
+void print_instruction_memory(const Memoria_instrucao *mem, WINDOW *mem2);
+void print_binary(uint16_t value, WINDOW *mem2, int x, int y);
 void mem_to_asm(Memoria_instrucao *mem);
-void print_asm(Decoded d);
+void print_asm(Decoded d, WINDOW *mem2, int x, int y);
 void exibe1_asm(Memoria_instrucao *mem, int index);
-void exibeTodos_asm(Memoria_instrucao *mem);
+void exibeTodos_asm(Memoria_instrucao *mem, WINDOW *mem2);
 void exibeEst(Memoria_instrucao *mem);
 
 #endif

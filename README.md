@@ -80,15 +80,14 @@ make clean  #limpa arquivos antigos de build
 
 Após compilar e executar, as opções disponíveis no menu do simulador são: 
 
-```
+![Menu do Projeto](img/menu.png)
 
-```
-Para verificação e teste, o simulador pode ser testado utilizando a memória de instruções (`memoria1.mem` ou `memoria1_2.mem`) e a memória de dados (`memoria1.dat`) já disponíveis neste repositório.
-Recomenda-se primeiramente carregar a memória de instruções. 
+Para verificação e teste, o simulador pode ser testado utilizando a memória de instruções (`fatorial4.mem`) e a memória de dados (`fatorial4.dat`) já disponíveis neste repositório. Essas memória efetuam o cálculo do fatorial do número 4.
+Recomenda-se primeiro carregar a memória de instruções. 
 
 ### Memória de Instruções (`.mem`)
 
-O arquivo `.mem` deve conter uma instrução por linha podem estar em formato binário. A capacidade total da memória de instruções é de 256 instruções. A estrutura das intruções e como formá-las está descrito no repositório do projeto Monociclo.
+O arquivo `.mem` deve conter uma instrução por linha em formato binário. A capacidade total da memória de instruções é de 256 instruções. A estrutura das intruções e como formá-las está descrito no repositório do projeto Monociclo, citado na seção [Organização Pipeline](#organização-pipeline).
 
 Exemplo em binário:
 

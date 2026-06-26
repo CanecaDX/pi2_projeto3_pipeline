@@ -83,7 +83,7 @@ void set_bi_di(BI_DI *bi_di,uint8_t pc, uint16_t instrucao){
     bi_di->instrucao = instrucao;
 }
 
-void set_di_ex(DI_EX *di_ex, uint8_t pc, uint16_t instrucao, uint8_t opcode,uint8_t rt, uint8_t rd, uint8_t funct, uint8_t RegDst, uint8_t RegWrite, uint8_t Memtoreg,  uint8_t ULASrc, uint8_t MemRead, uint8_t MemWrite, uint8_t Branch,  uint8_t jump,  uint8_t ULA_op,  int8_t rs_dado, int8_t rt_dado, int8_t imm_dado, uint8_t address){
+void set_di_ex(DI_EX *di_ex, uint8_t pc, uint16_t instrucao, uint8_t opcode,uint8_t rt, uint8_t rd, uint8_t funct, uint8_t RegDst, uint8_t RegWrite, uint8_t Memtoreg,  uint8_t ULASrc, uint8_t MemRead, uint8_t MemWrite, uint8_t Branch,  uint8_t jump,  uint8_t ULA_op,  int8_t rs_dado, int8_t rt_dado, int8_t imm_dado, uint8_t address, uint8_t rs){
 	di_ex->pc = pc;
     di_ex->instrucao = instrucao ;
    //ula funct
@@ -92,6 +92,7 @@ void set_di_ex(DI_EX *di_ex, uint8_t pc, uint16_t instrucao, uint8_t opcode,uint
 	
 	di_ex->rt = rt;
     di_ex->rd = rd;
+    di_ex->rs = rs;
     di_ex->funct = funct;
     //sinais
     di_ex->RegDst = RegDst;
@@ -145,4 +146,96 @@ void set_mem_wb(MEM_WB *mem_wb, uint16_t instrucao, uint8_t opcode, uint8_t rd, 
     mem_wb->ula_resultado = ula_resultado;
     //saidas
     mem_wb->saida_mem = saida_mem;
+}
+
+void copiaBI_DI(BI_DI *bi_di_backup, const BI_DI *bi_di){
+ if (!bi_di_backup || !bi_di) return;
+ *bi_di_backup = *bi_di;
+}
+
+void copiaDI_EX(DI_EX *di_ex_backup, const DI_EX *di_ex){
+ if (!di_ex_backup || !di_ex) return;
+ *di_ex_backup = *di_ex;
+}
+
+void copiaEX_MEM(EX_MEM *ex_mem_backup, const EX_MEM *ex_mem){
+ if (!ex_mem_backup || !ex_mem) return;
+ *ex_mem_backup = *ex_mem;
+}
+
+void copiaMEM_WB(MEM_WB *mem_wb_backup, const MEM_WB *mem_wb){
+ if (!mem_wb_backup || !mem_wb) return;
+ *mem_wb_backup = *mem_wb;
+}
+void clear_bi_di(BI_DI *bi_di) {
+    if (!bi_di) return;
+    bi_di->pc = 0;
+    bi_di->instrucao = 0;
+    bi_di->v = 0;
+}
+
+void clear_di_ex(DI_EX *di_ex) {
+    if (!di_ex) return;
+    di_ex->pc = 0;
+    di_ex->instrucao = 0;
+    di_ex->opcode = 0;
+    di_ex->rs = 0;
+    di_ex->rt = 0;
+    di_ex->rd = 0;
+    di_ex->funct = 0;
+    
+    di_ex->RegDst = 0;
+    di_ex->RegWrite = 0;
+    di_ex->Memtoreg = 0;
+    di_ex->ULASrc = 0;
+    di_ex->MemRead = 0;
+    di_ex->MemWrite = 0;
+    di_ex->Branch = 0;
+    di_ex->jump = 0;
+    di_ex->ULA_op = 0;
+    
+    di_ex->rs_dado = 0;
+    di_ex->rt_dado = 0;
+    di_ex->imm_dado = 0;
+    di_ex->address = 0;
+    di_ex->v = 0;
+}
+
+void clear_ex_mem(EX_MEM *ex_mem) {
+    if (!ex_mem) return;
+    ex_mem->pc = 0;
+    ex_mem->instrucao = 0;
+    ex_mem->opcode = 0;
+    ex_mem->rd = 0;
+    
+    // Sinais de controle zerados
+    ex_mem->RegWrite = 0;
+    ex_mem->Memtoreg = 0;
+    ex_mem->MemRead = 0;
+    ex_mem->MemWrite = 0;
+    ex_mem->Branch = 0;
+    ex_mem->jump = 0;
+    
+    ex_mem->address = 0;
+    ex_mem->branch_resultado = 0;
+    ex_mem->ula_resultado = 0;
+    ex_mem->Overflow = 0;
+    ex_mem->zero = 0;
+    ex_mem->rt_dado = 0;
+    ex_mem->v = 0;
+}
+
+void clear_mem_wb(MEM_WB *mem_wb) {
+    if (!mem_wb) return;
+    mem_wb->instrucao = 0;
+    mem_wb->opcode = 0;
+    mem_wb->rd = 0;
+    
+    // Sinais de controle zerados
+    mem_wb->RegWrite = 0;
+    mem_wb->Memtoreg = 0;
+    
+    mem_wb->ula_resultado = 0;
+    mem_wb->saida_mem = 0;
+    mem_wb->v = 0;
 }

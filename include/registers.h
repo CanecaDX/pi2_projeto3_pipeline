@@ -19,7 +19,7 @@ typedef struct{
 typedef struct {
 	In_registers in_regs;
 	Out_registers out_regs;
-	uint8_t *registradores;
+	int8_t *registradores;
 	int size;
 } Banco_registradores;
 

@@ -128,22 +128,23 @@ void print_instruction_memory(const Memoria_instrucao *mem, WINDOW *mem2)
 
     int y = 3;
     int x = 2;
+    
+    int largura_coluna = 25; 
 
     for(int i = 0; i < INSTR_MEM_SIZE; i++){
-        /* Se chegou ao final da área útil,
-           começa uma nova coluna */
+        /* Se chegou ao final da área útil, começa uma nova coluna */
         if(y >= max_y - 2){
             y = 3;
-            x += 35;
+            x += largura_coluna; 
         }
 
         /* Se não cabe mais coluna, para */
-        if(x + 35 >= max_x)
+        if(x + largura_coluna >= max_x)
             break;
 
-        mvwprintw(mem2, y, x, "Instr[%03d] = ", i);
+        mvwprintw(mem2, y, x, "[%d] : ", i);
 
-        print_binary(mem->instrucao[i].instr, mem2, y, x + 13);
+        print_binary(mem->instrucao[i].instr, mem2, y, x + 7);
 
         y++;
     }
@@ -151,8 +152,7 @@ void print_instruction_memory(const Memoria_instrucao *mem, WINDOW *mem2)
 
 void print_binary(uint16_t value, WINDOW *mem2, int y, int x){
     for(int i = 15; i >= 0; i--) {
-        mvwprintw(mem2, y, x + (15 - i), "%d",
-                  (value >> i) & 1);
+        mvwprintw(mem2, y, x + (15 - i), "%d", (value >> i) & 1);
     }
 }
 
@@ -252,6 +252,49 @@ void print_asm(Decoded d, WINDOW *mem2, int x, int y){
         }
     }	
 
+void get_asm_string(Decoded d, char *buffer, size_t buffer_size) {
+    if (!buffer || buffer_size == 0) return;
+
+    buffer[0] = '\0';
+
+    if (d.type == TYPE_R) {
+        switch (d.funct) {
+            case 0x0: // add
+                snprintf(buffer, buffer_size, "add $%u, $%u, $%u", d.rd, d.rs, d.rt);
+                break;
+            case 0x2: // sub
+                snprintf(buffer, buffer_size, "sub $%u, $%u, $%u", d.rd, d.rs, d.rt);
+                break;
+            case 0x4: // and
+                snprintf(buffer, buffer_size, "and $%u, $%u, $%u", d.rd, d.rs, d.rt);
+                break;
+            case 0x5: // or
+                snprintf(buffer, buffer_size, "or $%u, $%u, $%u", d.rd, d.rs, d.rt);
+                break;
+        }
+    } else if (d.type == TYPE_I) {
+        switch (d.opcode) {
+            case 0x4: // addi
+                snprintf(buffer, buffer_size, "addi $%u, $%u, %d", d.rt, d.rs, d.imm);
+                break;
+            case 0xB: // lw
+                snprintf(buffer, buffer_size, "lw $%u, %d($%u)", d.rt, d.imm, d.rs);
+                break;
+            case 0xF: // sw
+                snprintf(buffer, buffer_size, "sw $%u, %d($%u)", d.rt, d.imm, d.rs);
+                break;
+            case 0x8: // beq
+                snprintf(buffer, buffer_size, "beq $%u, $%u, %d", d.rt, d.rs, d.imm);
+                break;
+        }
+    } else if (d.type == TYPE_J) {
+        switch(d.opcode){
+            case 0x2: // j
+                snprintf(buffer, buffer_size, "j %u", d.address);
+                break;
+        }
+    }
+}
 void exibe1_asm(Memoria_instrucao *mem, int index){
 	
 	int count = mem ? mem->loaded_count : 0;
@@ -298,6 +341,70 @@ void exibe1_asm(Memoria_instrucao *mem, int index){
                switch (d.opcode){
                 case 0x2: // j
                     printf("Realiza um salto para posicao %u", d.address);
+                    break;
+               }
+            }
+		printf("\n");
+}
+
+void exibe1_asm_log(uint16_t instrucao, WINDOW *log){
+	
+     Decoded d = decode(instrucao);
+		//print_asm(d);
+			if (d.type == TYPE_R) {
+				switch (d.funct) {
+					case 0x0: // add
+                   
+                       
+						mvwprintw(log, 3, 3,"Soma o conteudo do registrador $%u com o conteudo de $%u e armazena em $%u", d.rs, d.rt, d.rd);
+						
+                        break;
+					case 0x2: // sub
+                        
+						mvwprintw(log, 3, 3,"Subtrai o conteudo do registrador $%u com o conteudo de $%u e armazena em $%u", d.rs, d.rt, d.rd);
+						
+                        break;
+					case 0x4: // and
+                        
+						mvwprintw(log, 3, 3,"Faz um AND com o conteudo do registrador $%u com o conteudo de $%u e armazena em $%u", d.rs, d.rt, d.rd);
+						
+                        break;
+					case 0x5: // or
+                        
+						mvwprintw(log, 3, 3,"Faz um OR com o conteudo do registrador $%u com o conteudo de $%u e armazena em $%u", d.rs, d.rt, d.rd);
+						
+                        break;
+				}
+			}else if(d.type == TYPE_I){
+				switch (d.opcode){
+				case 0x4: // addi
+                   
+                    mvwprintw(log, 3, 3,"Soma o valor imediato %d com o conteudo do registrador $%u e armazena em $%u", d.imm, d.rs, d.rt);
+                    
+                    break;
+                case 0xB: // lw
+                    
+					mvwprintw(log, 3, 3,"Carrega o conteudo armazenado na posicao %d da memoria para o registrador $%u", d.imm, d.rt);
+                   
+                    break;
+                case 0xF: // sw
+                   
+                   
+                    mvwprintw(log, 3, 3,"Armazena o conteudo do registrador $%u na posicao %d da memoria", d.rt, d.imm);
+                    
+                    break;
+                case 0x8: // beq
+                    
+                    mvwprintw(log, 3, 3,"Se os valores dos registradores $%u e $%u forem iguais, realiza um salto para a posicao informada.", d.rt, d.rs);
+                    
+                    break;
+				}	
+            }else if(d.type == TYPE_J){
+               switch (d.opcode){
+                case 0x2: // j
+                    
+                    mvwprintw(log, 3, 3,"Realiza um salto para posicao %u", d.address);
+                    
                     break;
                }
             }

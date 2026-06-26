@@ -44,7 +44,9 @@ void print_binary(uint16_t value, WINDOW *mem2, int x, int y);
 void mem_to_asm(Memoria_instrucao *mem);
 void print_asm(Decoded d, WINDOW *mem2, int x, int y);
 void exibe1_asm(Memoria_instrucao *mem, int index);
+void exibe1_asm_log(uint16_t instrucao, WINDOW *log);
 void exibeTodos_asm(Memoria_instrucao *mem, WINDOW *mem2);
 void exibeEst(Memoria_instrucao *mem);
+void get_asm_string(Decoded d, char *buffer, size_t buffer_size);
 
 #endif

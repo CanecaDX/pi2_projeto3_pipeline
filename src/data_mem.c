@@ -85,7 +85,7 @@ void data_memory_print(const Memoria_dado *mem, WINDOW *mem2){
            começa uma nova coluna */
         if(y >= max_y - 2){
             y = 3;
-            x += 35;
+            x += 25;
         }
         /* Se não cabe mais coluna, para */
         if(x + 35 >= max_x)

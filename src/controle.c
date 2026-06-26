@@ -1,7 +1,11 @@
 #include "controle.h"
 
-Out_controle controle_sinais(In_controle in){
+Out_controle controle_sinais(In_controle in, int v){
 	Out_controle out = {0};
+
+	if(v == 0){
+		return out;
+	}
 
 	switch (in.opcode) {
 		case 0x0: // tipo r

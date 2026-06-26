@@ -7,7 +7,7 @@
 
 int main() {
     Pipeline *p = pipeline_create();
-    Pipeline *p_backup = pipeline_create();
+    Pilha* pilha = criarPilha();
     Memoria_instrucao *new_mem = NULL;
     
     int yMAX, xMAX;
@@ -18,30 +18,41 @@ int main() {
     char mem_name[128];
     char data_name[128];
 
-    if (!p || !p_backup) {
+    if (!p) {
         printf("\nFalha ao alocar pipeline.\n");
         return 1;
     }
 
     // Iniciando ncurses
     initscr();
+    start_color();
+    if (has_colors() == FALSE) {
+        endwin();
+        printf("Seu terminal não suporta cores.\n");
+        return 1;
+    }
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_RED, COLOR_BLACK);
     noecho();
     cbreak();
+
+  
+
+    
 
     getmaxyx(stdscr, yMAX, xMAX); // pega dimensões máximas da tela
 
     //   dimensões baseadas na tela
     w_regs = (xMAX - w_menu) - 2;
     h_exec = yMAX - (h_regs + 2) - 8;
-    w_exec = (xMAX / 2) + 12;
+    w_exec = xMAX - 2;
 
     // JANELAS DO PROGRAMA
-    WINDOW *menu = newwin((yMAX - (yMAX - h_menu - 1) - 2), (xMAX - w_exec - 3), 1, 1);
-    WINDOW *regp = newwin((yMAX - h_menu), (xMAX - w_exec - 3), h_menu, 1);
+    WINDOW *menu = newwin((yMAX - (yMAX - h_menu - 1) - 2), (xMAX - (xMAX/2 + 13) - 3), 1, 1);
     WINDOW *mem2 = newwin(yMAX, xMAX, 0, 0);
-    WINDOW *log = newwin((yMAX - h_regs - h_exec - 1), w_exec, (h_regs + h_exec + 1), (xMAX / 2 - 13));
-    WINDOW *regw = newwin(h_regs, w_exec, 1, (xMAX / 2 - 13));
-    WINDOW *exec = newwin(h_exec, w_exec, h_regs + 1, (xMAX / 2 - 13));
+    WINDOW *log = newwin((yMAX - h_regs - h_exec - 1), w_exec, (h_regs + h_exec + 1), 1);
+    WINDOW *regw = newwin(h_regs, (xMAX / 2 + 13), 1, (xMAX / 2 - 13));
+    WINDOW *exec = newwin(h_exec, w_exec, h_regs + 1, 1);
 
     // Matriz com  opções do menu
     char options[][40] = {
@@ -54,8 +65,8 @@ int main() {
         "Salvar assembly",
         "Backup dados",
         "Rodar programa",
-        "Rodar 1 instrução", 
-        "Voltar 1 instrução",
+        "Rodar 1 ciclo", 
+        "Voltar 1 ciclo",
         "Resetar simulador"
     };
 
@@ -64,7 +75,6 @@ int main() {
     // Caixas das janelas
     box(menu, 0, 0);
     box(exec, 0, 0);
-    box(regp, 0, 0);
     box(mem2, 0, 0);
     box(regw, 0, 0);
     box(log, 0, 0);
@@ -76,9 +86,8 @@ int main() {
     //ja mostra no painel assim que inicia 
     programHead(13, p, p->mem_inst, regw);
     //mvwprintw(regp, 1, 1, "[MEMORIAS]");
-    wrefresh(regp);
     wrefresh(regw);
-    mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
+    mvwprintw(log, 1, 1, "[TERMINAL]");
     //mvwprintw(log, 3, 1, "altura: %d || largura: %d", yMAX, xMAX); 37 e 162
     wrefresh(log);
     keypad(menu, true);
@@ -189,13 +198,11 @@ int main() {
 							werase(mem2);
 
 							touchwin(menu);
-							touchwin(regp);
 							touchwin(log);
 							touchwin(regw);
 							touchwin(exec);
 
 							wrefresh(menu);
-							wrefresh(regp);
 							wrefresh(log);
 							wrefresh(regw);
 							wrefresh(exec);      
@@ -209,19 +216,17 @@ int main() {
 						wrefresh(mem2);
 						wgetch(mem2);
 		
-						werase(mem2);
 
-						touchwin(menu);
-						touchwin(regp);
-						touchwin(log);
-						touchwin(regw);
-						touchwin(exec);
+                        werase(mem2);
+                        wrefresh(mem2); 
 
-						wrefresh(menu);
-						wrefresh(regp);
-						wrefresh(log);
-						wrefresh(regw);
-						wrefresh(exec);       
+                        touchwin(menu);  wrefresh(menu);
+                        touchwin(log);   wrefresh(log);
+                        touchwin(regw);  wrefresh(regw);
+                        touchwin(exec);  wrefresh(exec);
+
+
+					
 						break;
                     case 5: // Ver instruções em formato assembly
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
@@ -238,13 +243,11 @@ int main() {
 							werase(mem2);
 
 							touchwin(menu);
-							touchwin(regp);
 							touchwin(log);
 							touchwin(regw);
 							touchwin(exec);
 
 							wrefresh(menu);
-							wrefresh(regp);
 							wrefresh(log);
 							wrefresh(regw);
 							wrefresh(exec);      
@@ -268,55 +271,84 @@ int main() {
                         wrefresh(log);
                         break;
 
-                    case 8: // Rodar programa
+                    case 8: // Rodar programa completo
+                        if (p->mem_inst->loaded_count == 0) {
+                            mvwprintw(log, 3, 2, "Erro: Carregue as instrucoes primeiro!");
+                            wrefresh(log);
+                            break;
+                        }
+
                         run(p, exec, regw, log);
-                        p->just_rewound = 1;
-                        mvwprintw(log, 3, 1, "Programa finalizado!..");
-                        print_regs(p->regs_bank, regw);
-
-                        programHead(13, p, p->mem_inst, regw); // Atualiza stats
+                        p->just_rewound = 1; 
+                        
+                        programHead(13, p, p->mem_inst, regw); // Exibe estatísticas finais acumuladas
+                        
                         wrefresh(exec);
                         wrefresh(regw);
                         wrefresh(log);
+
                         break;
 
-                    case 9: // Rodar 1 instrução
+                    case 9: // Rodar 1 ciclo
+                        if (p->mem_inst->loaded_count == 0) {
+                            mvwprintw(log, 3, 2, "Carregue as instrucoes primeiro!");
+                            wrefresh(log);
+                            break;
+                        }
+                        if (pipeline_terminou(p)) {
+                            reset_run(p);
+                            reset_stats(p);
+                        }
+
+                        empilhar(pilha, p);
+                        
+                        werase(log);
+                        box(log, 0, 0);
+                        mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
+                        mvwprintw(log, 2, 1, "Ciclo guardado na pilha (Tamanho: %d)", pilha->tamanho);
+                        
                         run_step(p, exec, regw, log);
+                        
                         print_regs(p->regs_bank, regw);
-                        programHead(13, p, p->mem_inst, regw); // Atualiza stats
+                        programHead(13, p, p->mem_inst, regw); 
                         wrefresh(exec);
                         wrefresh(regw);
                         wrefresh(log);
                         break;
 
-                    case 10: // Voltar 1 instrução
-                        if (!p->has_executed) {
-                            mvwprintw(log, 3, 1, "Ao menos uma instrução deve ter sido executada.");
-                        } else if (p->just_rewound) {
-                            mvwprintw(log, 3, 1, "Não é possível voltar duas instruções seguidas.");
-                        } else {
-                            copiaSimulador(p, p_backup);
-                            p->just_rewound = 1;
-                            mvwprintw(log, 3, 1, "VOLTOU 1 INSTRUÇÃO! PC ESTÁ EM: %d", p->pc.pc_index);
+                    case 10: // Voltar 1 ciclo
+                        if (pilha->tamanho > 0) {
+                            desempilhar(pilha, p);
+                            mostra_estagios(p, exec);
+                            werase(log);
+                            box(log, 0, 0);
+                            mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
+                            mvwprintw(log, 3, 1, "VOLTOU 1 CICLO! PC ATUAL: %d", p->pc.pc_index);
+                            mvwprintw(log, 4, 1, "Estados na pilha: %d", pilha->tamanho);
+                            
                             print_regs(p->regs_bank, regw);
                             programHead(13, p, p->mem_inst, regw);
+                        } else {
+                            mvwprintw(log, 3, 1, "Impossivel voltar: Inicio do programa atingido.");
                         }
                         wrefresh(exec);
                         wrefresh(regw);
                         wrefresh(log);
                         break;
 
-                    case 11: // Resetar simulador
+                    case 11: // Resetar simulador explicitamente
                         reset_all(p);
-                        mvwprintw(log, 3, 1, "Simulador resetado com sucesso!");
+                        
                         werase(log); 
-                        box(log, 0, 0); // Limpa as estatísticas visuais
+                        box(log, 0, 0); 
+                        mvwprintw(log, 3, 1, "Simulador resetado com sucesso!");
+                        
                         programHead(13, p, p->mem_inst, regw);
                         wrefresh(exec);
                         wrefresh(log);
                         wrefresh(regw);
                         break;
-                }
+                    }
                 break;
         }
     }

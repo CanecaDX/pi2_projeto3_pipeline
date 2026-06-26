@@ -56,7 +56,7 @@ Além dos componentes básicos da arquitetura, como memórias, banco de registra
 - EX/MEM - registrador que fica entre os estágios de execução e acesso a memória. É responsável por armazenar o valor do PC vindo do registrador anterior, os sinais vindos do registrador anterior que não foram usados no estágio anterior e o resultado da ULA.
 - MEM/WB - registrador que fica entre os estágios de acesso a memória e escrita de retorno. É responsável por armazenar os sinais vindos do registrador anterior que não foram usados no estágio anterior, bem como o resultado da ULA ou dado vindo da memória, dependendo da instrução.
 
-Dentre os hazards possíveis da organização pipeline, esse simulador trata hazards de dados que se resolvem com forwarding, então o mesmo possui uma unidade de forwarding também.
+Dentre os hazards possíveis da organização pipeline, esse simulador trata hazards de dados que se resolvem com forwarding.
 
 ---
 
@@ -110,6 +110,10 @@ Exemplo:
 100
 -5
 ```
+### Execução
+
+Após carregar as memórias, é possível executar o programa carregado, de diferentes formas, usando as opções ```Rodar programa```, ```Rodar 1 ciclo``` e ```Voltar 1 ciclo```. A execução dos estágios do pipeline será mostrada na janela central da interface. As estatísticas são atualizadas em tempo real e mostradas no cabeçalho, junto dos registradores do banco de registradores, ao lado da janela do Menu. Na parte inferior da tela, há um terminal para avisos e interação. 
+![Execucao](img/exec1.png)
 
 ## Referências
 

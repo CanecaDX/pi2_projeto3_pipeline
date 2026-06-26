@@ -94,7 +94,7 @@ void run(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log);
 void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log);
 void copiaSimulador (Pipeline *p_backup, Pipeline* p);
 void programHead(int cond, Pipeline *p, Memoria_instrucao *mem, WINDOW * regw);
-void reset_all(Pipeline *p);
+void reset_all(Pipeline *p, Pilha * pilha);
 void reset_run(Pipeline *p);
 void copiaStats(Stats *stats_backup, Stats *stats);
 Pilha* criarPilha();
@@ -102,7 +102,7 @@ void empilhar(Pilha * p, Pipeline* pipeline);
 void desempilhar(Pilha * p, Pipeline* pipeline);
 void reset_stats(Pipeline *p);
 int pipeline_terminou(Pipeline *p);
-void limparPilha(Pilha *p);
+void limpar_pilha(Pilha *p);
 void forward_unit(Pipeline *p);
 void mostra_estagios(Pipeline *p, WINDOW * exec);
 #endif

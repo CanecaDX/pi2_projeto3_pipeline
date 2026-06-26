@@ -17,6 +17,8 @@ Stats *stats_create(void){
 	stats->cpi = 0;
 	return stats;
 }
+
+
 //verifica se o reg está vazio pelo bit de validade
 int mem_wb_empty(Pipeline *p){return (p->mem_wb.v == 0) ? 1 : 0;}
 
@@ -67,10 +69,13 @@ Pipeline *pipeline_create(){
     return p;
 }
 void buscar(Pipeline *p, WINDOW * exec, WINDOW *log){
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
+    int col_x = 2 + (0 * tam_coluna);
     char bufF[17];
     Decoded d;
     // COLUNA 1: Inicia em X = 2
-    int col_x = 2;
 
     if(p->pc.pc_index >= p->mem_inst->loaded_count){
         //seta a instrução como 0 - bolha e 'bit' de validade como 0 - instrução inválida
@@ -82,18 +87,19 @@ void buscar(Pipeline *p, WINDOW * exec, WINDOW *log){
         p->bi_di.pc = p->pc.pc_index;
         return;
     }
-    mvwprintw(exec, 1, 5, "=== BUSCA ===");
+    mvwprintw(exec, 1, col_x + 4, "    BUSCA    ");
+    mvwprintw(exec, 2, col_x,"_____________________" );
     
    
     Instrucao *instr_lida = p->mem_inst->instrucao + p->pc.pc_index;
     p->instrucao_buscada.instr = instr_lida->instr;
     d = decode(instr_lida->instr);
     get_asm_string(d, bufF, sizeof(bufF));
-    mvwprintw(exec, 3, 5, bufF);
+    mvwprintw(exec, 4, col_x, bufF);
     
 
     p->pc.pc_index = p->pc.pc_index + 1;
-    mvwprintw(exec, 6, 9, "PC: %d", p->pc.pc_index); 
+    mvwprintw(exec, 6, col_x, "PC: %d", p->pc.pc_index-1); 
     set_bi_di(&p->bi_di, p->pc.pc_index, instr_lida->instr);
 
     //diz que a instrução é valida
@@ -104,14 +110,18 @@ void buscar(Pipeline *p, WINDOW * exec, WINDOW *log){
 }
 
 void decodificar(Pipeline *p, WINDOW * exec){
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
+    int col_x = 2 + (1 * tam_coluna);
     char bufD[17];
     // COLUNA 2: Inicia em X = 22
-    int col_x = 28;
     p->instrucao_decodificao.instr = p->bi_di.instrucao;
     p->decoded_inst = decode(p->bi_di.instrucao);
     get_asm_string(p->decoded_inst, bufD, sizeof(bufD));
-    mvwprintw(exec, 1, 25, "=== DECODIFICACAO ===");
-    mvwprintw(exec, 3, col_x, bufD);
+    mvwprintw(exec, 1, col_x+4, "    DECODIFICACAO    ");
+    mvwprintw(exec, 2, col_x,"___________________________" );
+    mvwprintw(exec, 4, col_x, bufD);
     
     
     p->controle.input.opcode = p->decoded_inst.opcode;
@@ -119,87 +129,87 @@ void decodificar(Pipeline *p, WINDOW * exec){
 
     p->controle.output = controle_sinais(p->controle.input, p->bi_di.v);
     // Sinais condensados em linha para caber na tela
-    mvwprintw(exec, 5, col_x, "SINAIS DE CONTROLE:");
+    mvwprintw(exec, 6, col_x, "SINAIS DE CONTROLE:");
     if(p->controle.output.RegDst == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 6, col_x, "RegDst:   %d", p->controle.output.RegDst);
+        mvwprintw(exec, 7, col_x, "RegDst:   %d", p->controle.output.RegDst);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 6, col_x, "RegDst:   %d", p->controle.output.RegDst);
+        mvwprintw(exec, 7, col_x, "RegDst:   %d", p->controle.output.RegDst);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
      if(p->controle.output.RegWrite == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 7, col_x, "EscReg: %d", p->controle.output.RegWrite);
+        mvwprintw(exec, 8, col_x, "EscReg: %d", p->controle.output.RegWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 7, col_x, "EscReg: %d", p->controle.output.RegWrite);
+        mvwprintw(exec, 8, col_x, "EscReg: %d", p->controle.output.RegWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
       if(p->controle.output.Memtoreg == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 8, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
+        mvwprintw(exec, 9, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 8, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
+        mvwprintw(exec, 9, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     
      if(p->controle.output.MemRead == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 10, 28, "LerMem:  %d", p->controle.output.MemRead);
+        mvwprintw(exec, 10, col_x, "LerMem:  %d", p->controle.output.MemRead);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 10, 28, "LerMem:  %d", p->controle.output.MemRead);
+        mvwprintw(exec, 10, col_x, "LerMem:  %d", p->controle.output.MemRead);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     if(p->controle.output.MemWrite == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 9, col_x, "EscMem: %d", p->controle.output.MemWrite);
+        mvwprintw(exec, 11, col_x, "EscMem: %d", p->controle.output.MemWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 9, col_x, "EscMem: %d", p->controle.output.MemWrite);
+        mvwprintw(exec, 11, col_x, "EscMem: %d", p->controle.output.MemWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-    mvwprintw(exec, 11, col_x, "ULAFonte: %d", p->controle.output.ULASrc);
+    mvwprintw(exec, 12, col_x, "ULAFonte: %d", p->controle.output.ULASrc);
     if(p->controle.output.Branch == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 12, 39, "Branch: %d", p->controle.output.Branch);
+        mvwprintw(exec, 13, col_x, "Branch: %d", p->controle.output.Branch);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 12, 39, "Branch: %d", p->controle.output.Branch);
+        mvwprintw(exec, 13, col_x, "Branch: %d", p->controle.output.Branch);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     if(p->controle.output.jump == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 11, 40, "Jump:  %d", p->controle.output.jump);
+        mvwprintw(exec, 14, col_x, "Jump:  %d", p->controle.output.jump);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 11, 40, "Jump:  %d", p->controle.output.jump);
+        mvwprintw(exec, 14, col_x, "Jump:  %d", p->controle.output.jump);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-    mvwprintw(exec, 12, col_x, "ULA_op: %d", p->controle.output.ULA_op);
+    mvwprintw(exec, 15, col_x, "ULA_op: %d", p->controle.output.ULA_op);
 
     p->regs_bank->in_regs.reg_base1 = p->decoded_inst.rs;
     p->regs_bank->in_regs.reg_base2 = p->decoded_inst.rt;
@@ -219,18 +229,27 @@ void decodificar(Pipeline *p, WINDOW * exec){
 }
 
 void executar(Pipeline *p, WINDOW * exec){
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
+    int col_x = 2 + (2 * tam_coluna);
     // COLUNA 3: Inicia em X = 42
     char bufEx[17];
-    int col_x = 56;
     int dado_final_rs = p->di_ex.rs_dado; //pega os valores padrões
     int dado_final_rt = p->di_ex.rt_dado;
     p->instrucao_executada.instr = p->di_ex.instrucao;
     Decoded d = decode(p->di_ex.instrucao);
     get_asm_string(d, bufEx, sizeof(bufEx));
 
-    int linha_fw = 15;
+    int linha_fw = 12;
 
-    mvwprintw(exec, linha_fw + 2, col_x, "Sinais Fw -> rs: %d | rt: %d", p->f->A, p->f->B);
+    mvwprintw(exec, 1, col_x+4, "    EXECUCAO    ");
+    mvwprintw(exec, 2, col_x,"_______________________" );
+    mvwprintw(exec, 4, col_x, bufEx);
+
+    mvwprintw(exec, 6, col_x, "SINAIS DE FORWARDING");
+    mvwprintw(exec, 7, col_x, "$rs: %d estagio (s)", p->f->A);
+    mvwprintw(exec, 8, col_x, "$rt: %d estagio (s)", p->f->B);
 
     //sinais 1 e 2 pro foward representam a distancia dos dados
     // 2: dado que veio do estágio de wb
@@ -239,23 +258,22 @@ void executar(Pipeline *p, WINDOW * exec){
 
     if (p->f->A != 0) {
         dado_final_rs = p->f->valA;
-        mvwprintw(exec, linha_fw, col_x, "Fw rs=%d: %d", p->f->A, p->f->valA);
-    } 
+        mvwprintw(exec, 10, col_x, "Valor antecipado para $rs: %d", p->f->valA);
+    }else if(p->f->A == 0){
+        mvwprintw(exec, 10, col_x, "Valor $rs: %d ", dado_final_rs);
+    }
 
     if (p->f->B != 0) {
         dado_final_rt = p->f->valB;
-        mvwprintw(exec, linha_fw + 1, col_x, "Fw rt=%d: %d", p->f->B, p->f->valB);
+        mvwprintw(exec, 11, col_x, "Valor antecipado para $rt: %d", p->f->valB);
+    }else if(p->f->B == 0){
+        mvwprintw(exec, 11, col_x, "Valor $rt: %d", dado_final_rt);
     }
-
-    mvwprintw(exec, 1, 55, "=== EXECUCAO ===");
-    mvwprintw(exec, 3, col_x, bufEx);
     
-    mvwprintw(exec, 5, col_x, "Val rs:  %d (Fw:%d)", dado_final_rs, p->f->A);
-    mvwprintw(exec, 6, col_x, "Val rt:  %d (Fw:%d)", dado_final_rt, p->f->B);
     p->address_exec = p->di_ex.address;
     p->imm_dado_exec = p->di_ex.imm_dado;
-    mvwprintw(exec, 7, col_x, "Imediato:%d", p->di_ex.imm_dado);
-    mvwprintw(exec, 8, col_x, "End Jump:%d", p->di_ex.address);
+    mvwprintw(exec, 12, col_x, "Imediato:%d", p->di_ex.imm_dado);
+    mvwprintw(exec, 13, col_x, "Endereco Jump:%d", p->di_ex.address);
 
 
     if (p->di_ex.RegDst == 0x1) {
@@ -275,10 +293,10 @@ void executar(Pipeline *p, WINDOW * exec){
 
     p->ula.output = ulaExecuta(&p->ula.input);
     
-    mvwprintw(exec, 9, col_x, "ULA Saida: %d", p->ula.output.resultado);
+    mvwprintw(exec, 14, col_x, "Resultado ULA: %d", p->ula.output.resultado);
     
     if (p->ula.output.Overflow == 1) {
-        mvwprintw(exec, 10, col_x, "OVERFLOW!");
+        mvwprintw(exec, 15, col_x, "OVERFLOW!");
     }
     
     if (p->ex_mem.Branch == 1 && p->ex_mem.zero == 1) {
@@ -298,14 +316,17 @@ void executar(Pipeline *p, WINDOW * exec){
 }
 
 void acesso_memoria(Pipeline *p, WINDOW * exec){
-    // COLUNA 4: Inicia em X = 62
-    int col_x = 79;
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
+    int col_x = 2 + (3 * tam_coluna);    
     char buf[17];
     p->instrucao_memoria.instr = p->ex_mem.instrucao;
     Decoded d = decode(p->ex_mem.instrucao);
     get_asm_string(d, buf, sizeof(buf));
-    mvwprintw(exec, 1, 75, "=== ACESSO A MEMORIA ===");
-    mvwprintw(exec, 3, col_x, buf);
+    mvwprintw(exec, 1, col_x+4, "    ACESSO A MEMORIA    ");
+    mvwprintw(exec, 2, col_x,"______________________________" );
+    mvwprintw(exec, 4, col_x, buf);
 
     p->Branch_mem=p->ex_mem.Branch;
     p->zero_mem=p->ex_mem.zero;
@@ -314,29 +335,29 @@ void acesso_memoria(Pipeline *p, WINDOW * exec){
     p->ula_resultado_mem=p->ex_mem.ula_resultado;
     p->rt_dado_mem=p->ex_mem.rt_dado;
 
-    mvwprintw(exec, 5, col_x, "ULA Res:  %d", p->ex_mem.ula_resultado);
-    mvwprintw(exec, 6, col_x, "Dado Esc:  %d", p->ex_mem.rt_dado);
+    mvwprintw(exec, 6, col_x, "Resultado ULA:  %d", p->ex_mem.ula_resultado);
+    mvwprintw(exec, 7, col_x, "Dado a escrever:  %d", p->ex_mem.rt_dado);
 
-    mvwprintw(exec, 7, col_x, "End Br:   %d", p->ex_mem.branch_resultado);
-    mvwprintw(exec, 8, col_x, "End Jmp:  %d", p->ex_mem.address);
+    mvwprintw(exec, 8, col_x, "Endereco Branch:   %d", p->ex_mem.branch_resultado);
+    mvwprintw(exec, 9, col_x, "Endereco Jump:  %d", p->ex_mem.address);
 
 
     if (p->ex_mem.jump == 1) {
         // colocar log de execucao que desviou para tal endereco
         p->pc.pc_index = p->ex_mem.address;
     } else if (p->ex_mem.Branch == 1 && p->ex_mem.zero == 1) {
-        mvwprintw(exec, 9, col_x, "ULA ZERO:  %d", p->ex_mem.zero);
+        mvwprintw(exec, 10, col_x, "Flag 0 ULA:  %d", p->ex_mem.zero);
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 10, col_x, "BRANCH FOI TOMADO");
+        mvwprintw(exec, 11, col_x, "Branch tomado!");
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));
         p->stats->beqT++;
         // colocar log de execucao que branch deu certo para tal endereco
         p->pc.pc_index = p->ex_mem.branch_resultado;
     } else if (p->ex_mem.Branch == 1 && p->ex_mem.zero == 0) {
-        mvwprintw(exec, 9, col_x, "ULA ZERO:  %d", p->ex_mem.zero);
+        mvwprintw(exec, 10, col_x, "Flag 0 ULA:  %d", p->ex_mem.zero);
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 10, col_x, "BRANCH NAO FOI TOMADO");
+        mvwprintw(exec, 11, col_x, "Branch nao tomado!");
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
         p->stats->beqNT++;
@@ -361,14 +382,17 @@ void acesso_memoria(Pipeline *p, WINDOW * exec){
 }
 
 void write_back(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
-    // COLUNA 5: Inicia em X = 82
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
+    int col_x = 2 + (4 * tam_coluna);    
     char buf[17];
-    int col_x = 108;
     p->instrucao_wb.instr = p->mem_wb.instrucao;
     Decoded d = decode(p->mem_wb.instrucao);
     get_asm_string(d, buf, sizeof(buf));
-    mvwprintw(exec, 1, 103, "=== RETORNO DA ESCRITA ===");
-    mvwprintw(exec, 3, col_x, buf);
+    mvwprintw(exec, 1, col_x+6, "    ESCRITA DE RETORNO    ");
+    mvwprintw(exec, 2, col_x+6,"____________________________" );
+    mvwprintw(exec, 4, col_x+6, buf);
 
     if (p->mem_wb.Memtoreg == 0x1) {
         p->regs_bank->in_regs.dado_escrever = p->mem_wb.saida_mem;
@@ -377,7 +401,7 @@ void write_back(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
     }
 
     p->regs_bank->in_regs.reg_destino = p->mem_wb.rd;
-    mvwprintw(exec, 5, col_x, "Reg Dest: r%d", p->mem_wb.rd);
+    mvwprintw(exec, 6, col_x+6, "Registrador de destino: r%d", p->mem_wb.rd);
     
     p->regs_bank->in_regs.write_reg = p->mem_wb.RegWrite;
     if (p->regs_bank->in_regs.reg_destino != 0) {
@@ -387,8 +411,8 @@ void write_back(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
         mvwprintw(log, 3, 2, "Registrador r$0 permite apenas leitura!");
     }
     
-    mvwprintw(exec, 6, col_x, "Dado Esc:  %d", p->regs_bank->in_regs.dado_escrever);
-    mvwprintw(exec, 7, col_x, "EscReg:    %d", p->mem_wb.RegWrite);
+    mvwprintw(exec, 7, col_x+6, "Dado a escrever:  %d", p->regs_bank->in_regs.dado_escrever);
+    mvwprintw(exec, 8, col_x+6, "EscReg:    %d", p->mem_wb.RegWrite);
 
     p->RegWrite_wb=p->mem_wb.RegWrite;
     p->rd_wb = p->mem_wb.rd;
@@ -430,172 +454,173 @@ void mostra_estagios(Pipeline *p, WINDOW * exec){
     char bufF[17], bufD[17], bufEx[17], bufMem[17], bufWb[17];
     Decoded d;
 
-    mvwprintw(exec, 1, 5, "=== BUSCA ===");
-    
-    
-    
+    int yMax, xMax;
+    getmaxyx(exec, yMax, xMax);
+    int tam_coluna = (xMax - 4) / 5;
 
+    // ==================== COLUNA 0: BUSCA ====================
+    int col_x = 2 + (0 * tam_coluna);
+    mvwprintw(exec, 1, col_x + 4, "    BUSCA    ");
+    mvwprintw(exec, 2, col_x, "_____________________");
+    
     d = decode(p->instrucao_buscada.instr);
     get_asm_string(d, bufF, sizeof(bufF));
-    mvwprintw(exec, 3, 5, bufF);
-    mvwprintw(exec, 5, 9, "PC: %d", p->pc.pc_index); 
+    mvwprintw(exec, 4, col_x, bufF);
+    mvwprintw(exec, 6, col_x, "PC: %d", p->pc.pc_index); 
         
     wrefresh(exec);
 
-    // COLUNA 2: Inicia em X = 22
-    
+    // ==================== COLUNA 1: DECODIFICACAO ====================
+    col_x = 2 + (1 * tam_coluna);
     p->decoded_inst = decode(p->instrucao_decodificao.instr);
     get_asm_string(p->decoded_inst, bufD, sizeof(bufD));
-    mvwprintw(exec, 1, 25, "=== DECODIFICACAO ===");
-    mvwprintw(exec, 3, 28, bufD);
+    mvwprintw(exec, 1, col_x + 4, "    DECODIFICACAO    ");
+    mvwprintw(exec, 2, col_x, "___________________________");
+    mvwprintw(exec, 4, col_x, bufD);
     
-    
-    //p->controle.input.opcode = p->decoded_inst.opcode;
-    //p->controle.input.function = p->decoded_inst.funct;
     p->controle.output = controle_sinais(p->controle.input, p->bi_di.v);
-    int col_x = 28;
-    // Sinais condensados em linha para caber na tela
-    mvwprintw(exec, 5, col_x, "SINAIS DE CONTROLE:");
+    
+    mvwprintw(exec, 6, col_x, "SINAIS DE CONTROLE:");
     if(p->controle.output.RegDst == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 6, col_x, "RegDst:   %d", p->controle.output.RegDst);
+        mvwprintw(exec, 7, col_x, "RegDst:   %d", p->controle.output.RegDst);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 6, col_x, "RegDst:   %d", p->controle.output.RegDst);
+        mvwprintw(exec, 7, col_x, "RegDst:   %d", p->controle.output.RegDst);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-     if(p->controle.output.RegWrite == 1){
+    if(p->controle.output.RegWrite == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 7, col_x, "EscReg: %d", p->controle.output.RegWrite);
+        mvwprintw(exec, 8, col_x, "EscReg: %d", p->controle.output.RegWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 7, col_x, "EscReg: %d", p->controle.output.RegWrite);
+        mvwprintw(exec, 8, col_x, "EscReg: %d", p->controle.output.RegWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-      if(p->controle.output.Memtoreg == 1){
+    if(p->controle.output.Memtoreg == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 8, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
+        mvwprintw(exec, 9, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 8, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
+        mvwprintw(exec, 9, col_x, "MemParaReg: %d", p->controle.output.Memtoreg);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     
-     if(p->controle.output.MemRead == 1){
+    if(p->controle.output.MemRead == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 10, 28, "LerMem:  %d", p->controle.output.MemRead);
+        mvwprintw(exec, 10, col_x, "LerMem:  %d", p->controle.output.MemRead);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 10, 28, "LerMem:  %d", p->controle.output.MemRead);
+        mvwprintw(exec, 10, col_x, "LerMem:  %d", p->controle.output.MemRead);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     if(p->controle.output.MemWrite == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 9, col_x, "EscMem: %d", p->controle.output.MemWrite);
+        mvwprintw(exec, 11, col_x, "EscMem: %d", p->controle.output.MemWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 9, col_x, "EscMem: %d", p->controle.output.MemWrite);
+        mvwprintw(exec, 11, col_x, "EscMem: %d", p->controle.output.MemWrite);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-    mvwprintw(exec, 11, col_x, "ULAFonte: %d", p->controle.output.ULASrc);
+    mvwprintw(exec, 12, col_x, "ULAFonte: %d", p->controle.output.ULASrc);
     if(p->controle.output.Branch == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 12, 39, "Branch: %d", p->controle.output.Branch);
+        mvwprintw(exec, 13, col_x, "Branch: %d", p->controle.output.Branch);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 12, 39, "Branch: %d", p->controle.output.Branch);
+        mvwprintw(exec, 13, col_x, "Branch: %d", p->controle.output.Branch);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
     if(p->controle.output.jump == 1){
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 11, 40, "Jump:  %d", p->controle.output.jump);
+        mvwprintw(exec, 14, col_x, "Jump:  %d", p->controle.output.jump);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));    
     } else {
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 11, 40, "Jump:  %d", p->controle.output.jump);
+        mvwprintw(exec, 14, col_x, "Jump:  %d", p->controle.output.jump);
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
     }
-    mvwprintw(exec, 12, col_x, "ULA_op: %d", p->controle.output.ULA_op);
+    mvwprintw(exec, 15, col_x, "ULA_op: %d", p->controle.output.ULA_op);
 
-    int dado_final_rs = p->di_ex.rs_dado; //pega os valores padrões
+    // ==================== COLUNA 2: EXECUCAO ====================
+    col_x = 2 + (2 * tam_coluna);
+    int dado_final_rs = p->di_ex.rs_dado; 
     int dado_final_rt = p->di_ex.rt_dado;
     d = decode(p->instrucao_executada.instr);
     get_asm_string(d, bufEx, sizeof(bufEx));
 
-    mvwprintw(exec, 1, 55, "=== EXECUCAO ===");
-    mvwprintw(exec, 3, 56, bufEx);
+    mvwprintw(exec, 1, col_x + 4, "    EXECUCAO    ");
+    mvwprintw(exec, 2, col_x, "_______________________");
+    mvwprintw(exec, 4, col_x, bufEx);
     
-    mvwprintw(exec, 5, 56, "Val rs:  %d (Fw:%d)", dado_final_rs, p->f->A);
-    mvwprintw(exec, 6, 56, "Val rt:  %d (Fw:%d)", dado_final_rt, p->f->B);
-    mvwprintw(exec, 7, 56, "Imediato:%d", p->imm_dado_exec);
-    mvwprintw(exec, 8, 56, "End Jump:%d", p->address_exec);    
-    mvwprintw(exec, 9, 56, "ULA Saida: %d", p->ula.output.resultado);
+    mvwprintw(exec, 5, col_x, "Val rs:  %d (Fw:%d)", dado_final_rs, p->f->A);
+    mvwprintw(exec, 6, col_x, "Val rt:  %d (Fw:%d)", dado_final_rt, p->f->B);
+    mvwprintw(exec, 7, col_x, "Imediato:%d", p->imm_dado_exec);
+    mvwprintw(exec, 8, col_x, "End Jump:%d", p->address_exec);    
+    mvwprintw(exec, 9, col_x, "ULA Saida: %d", p->ula.output.resultado);
     
     if (p->ula.output.Overflow == 1) {
-        mvwprintw(exec, 10, 56, "OVERFLOW!");
+        mvwprintw(exec, 10, col_x, "OVERFLOW!");
     }
 
+    // ==================== COLUNA 3: ACESSO A MEMORIA ====================
+    col_x = 2 + (3 * tam_coluna);
     d = decode(p->instrucao_memoria.instr);
     get_asm_string(d, bufMem, sizeof(bufMem));
-    mvwprintw(exec, 1, 75, "=== ACESSO A MEMORIA ===");
-    mvwprintw(exec, 3, 79, bufMem);
+    mvwprintw(exec, 1, col_x + 4, "    ACESSO A MEMORIA    ");
+    mvwprintw(exec, 2, col_x, "______________________________");
+    mvwprintw(exec, 4, col_x, bufMem);
 
-  
-    mvwprintw(exec, 5, 79, "ULA Res:  %d",  p->ula_resultado_mem);
-    mvwprintw(exec, 6, 79, "Dado Esc:  %d",  p->rt_dado_mem);
-
-    mvwprintw(exec, 7, 79, "End Br:   %d", p->branch_resultado_mem);
-    mvwprintw(exec, 8, 79, "End Jmp:  %d", p->address_mem);
-
+    mvwprintw(exec, 5, col_x, "ULA Res:  %d",  p->ula_resultado_mem);
+    mvwprintw(exec, 6, col_x, "Dado Esc:  %d",  p->rt_dado_mem);
+    mvwprintw(exec, 7, col_x, "End Br:   %d", p->branch_resultado_mem);
+    mvwprintw(exec, 8, col_x, "End Jmp:  %d", p->address_mem);
 
     if (p->Branch_mem == 1 && p->zero_mem == 1) {
-        mvwprintw(exec, 9, 79, "ULA ZERO:  %d", p->zero_mem);
+        mvwprintw(exec, 9, col_x, "ULA ZERO:  %d", p->zero_mem);
         wattron(exec, COLOR_PAIR(1));
-        mvwprintw(exec, 10, 79, "BRANCH FOI TOMADO");
+        mvwprintw(exec, 10, col_x, "BRANCH FOI TOMADO");
         clrtoeol();
         wattroff(exec, COLOR_PAIR(1));
-        // colocar log de execucao que branch deu certo para tal endereco
     } else if (p->Branch_mem == 1 && p->zero_mem == 0) {
-        mvwprintw(exec, 9, 79, "ULA ZERO:  %d", p->zero_mem);
+        mvwprintw(exec, 9, col_x, "ULA ZERO:  %d", p->zero_mem);
         wattron(exec, COLOR_PAIR(2));
-        mvwprintw(exec, 10, 79, "BRANCH NAO FOI TOMADO");
+        mvwprintw(exec, 10, col_x, "BRANCH NAO FOI TOMADO");
         clrtoeol();
         wattroff(exec, COLOR_PAIR(2));
-    // colocar log de execucao que branch nao deu certo para tal endereco
     }
 
+    // ==================== COLUNA 4: RETORNO DA ESCRITA ====================
+    col_x = 2 + (4 * tam_coluna);
     d = decode(p->instrucao_wb.instr);
     get_asm_string(d, bufWb, sizeof(bufWb));
-    mvwprintw(exec, 1, 103, "=== RETORNO DA ESCRITA ===");
-    mvwprintw(exec, 3, 108, bufWb);
+    mvwprintw(exec, 1, col_x + 6, "    ESCRITA DE RETORNO    ");
+    mvwprintw(exec, 2, col_x + 6, "____________________________");
+    mvwprintw(exec, 4, col_x + 6, bufWb);
 
-    mvwprintw(exec, 5, 108, "Reg Dest: r%d", p->rd_wb);
-    
-    mvwprintw(exec, 6, 108, "Dado Esc:  %d", p->regs_bank->in_regs.dado_escrever);
-    mvwprintw(exec, 7, 108, "EscReg:    %d",p->RegWrite_wb);
-
-    
-
+    mvwprintw(exec, 5, col_x + 6, "Reg Dest: r%d", p->rd_wb);
+    mvwprintw(exec, 6, col_x + 6, "Dado Esc:  %d", p->regs_bank->in_regs.dado_escrever);
+    mvwprintw(exec, 7, col_x + 6, "EscReg:    %d", p->RegWrite_wb);
 }
 
 void run_step(Pipeline *p, WINDOW * exec, WINDOW * regw, WINDOW * log){
@@ -670,10 +695,35 @@ void reset_run(Pipeline *p){
 	return;
 }
 
-void reset_all(Pipeline *p){
+void reset_all(Pipeline *p, Pilha * pilha){
 
 	reset_run(p);
     reset_stats(p);
+
+    clear_bi_di(&p->bi_di);
+    clear_di_ex(&p->di_ex);
+    clear_ex_mem(&p->ex_mem);
+    clear_mem_wb(&p->mem_wb);
+
+    p->instrucao_buscada.instr = 0;
+    
+    p->instrucao_decodificao.instr = 0;
+    
+    p->instrucao_executada.instr = 0;
+    p->imm_dado_exec = 0;  
+    p->address_exec = 0;
+    
+    p->instrucao_memoria.instr = 0;
+    p->Branch_mem = 0;
+    p->zero_mem = 0;
+    p->address_mem = 0;
+    p->branch_resultado_mem = 0;
+    p->ula_resultado_mem = 0;
+    p->rt_dado_mem = 0;
+    
+    p->RegWrite_wb = 0;
+    p->rd_wb = 0;
+    p->instrucao_wb.instr = 0;
 
 	for(int i = 0; i < 265; i++){
 		p->mem_inst->instrucao[i].instr = 0;
@@ -865,25 +915,36 @@ void desempilhar(Pilha * p, Pipeline* pipeline) {
     free(temp);
 }
 
-void limparPilha(Pilha *p) {
+void limpar_pilha(Pilha *p) {
     if (p == NULL) return;
 
-    // Supõe que o topo da sua pilha seja um ponteiro para um nó (ex: No* ou Node*)
-    // Ajuste o tipo "No" abaixo para o nome exato da sua estrutura de nó da pilha
     No *atual = p->topo;
     No *proximo = NULL;
 
+    // Vira a pilha liberando nó por nó
     while (atual != NULL) {
-        proximo = atual->proximo; // Guarda a referência do próximo antes de apagar o atual
-        
-        // Se o seu nó aloca o pipeline dinamicamente (ex: se p->topo->pipeline for um ponteiro):
-        // free(atual->pipeline); 
-        
-        free(atual);              // Libera o nó atual da memória
-        atual = proximo;          // Avança para o próximo
+        proximo = atual->proximo; // Salva o ponteiro para o próximo nó antes de apagar o atual
+
+        // 1. Se o nó possui uma cópia própria do pipeline, limpa as sub-alocações dele
+        if (atual->pipeline != NULL) {
+            if (atual->pipeline->stats != NULL)     free(atual->pipeline->stats);
+            if (atual->pipeline->regs_bank != NULL) free(atual->pipeline->regs_bank);
+            if (atual->pipeline->mem_data != NULL)  free(atual->pipeline->mem_data);
+            if (atual->pipeline->mem_inst != NULL)  free(atual->pipeline->mem_inst);
+            if (atual->pipeline->f != NULL)         free(atual->pipeline->f);
+            
+            // Libera a estrutura principal do pipeline clonado neste nó
+            free(atual->pipeline);
+        }
+
+        // 2. Libera a caixinha do Nó em si
+        free(atual);
+
+        // Avança para o próximo da fila
+        atual = proximo;
     }
 
-    // Agora que toda a lista encadeada foi liberada, limpamos o descritor da pilha
+    // 3. Deixa o descritor da pilha totalmente zerado e pronto para reuso
     p->topo = NULL;
     p->tamanho = 0;
 }

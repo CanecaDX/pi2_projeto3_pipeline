@@ -37,8 +37,8 @@ typedef struct {
 } Memoria_instrucao;
 
 Memoria_instrucao *instruction_memory_create(void);
-Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec);
-int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec);
+Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec, WINDOW * log);
+int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec, WINDOW * log);
 void print_instruction_memory(const Memoria_instrucao *mem, WINDOW *mem2);
 void print_binary(uint16_t value, WINDOW *mem2, int x, int y);
 void mem_to_asm(Memoria_instrucao *mem);

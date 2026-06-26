@@ -11,7 +11,6 @@ Memoria_instrucao *instruction_memory_create(void){
 
     mem->instrucao = calloc(INSTR_MEM_SIZE, sizeof(Instrucao));
     if (mem->instrucao == NULL) {
-        perror("Erro ao alocar memória");
         free(mem);
         return NULL;
     }
@@ -21,7 +20,7 @@ Memoria_instrucao *instruction_memory_create(void){
     return mem;
 }
 
-int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec) {
+int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDOW *exec, WINDOW * log) {
     char line[18]; 
     int is_binary = 1, i;
 
@@ -29,7 +28,7 @@ int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDO
 
     FILE *file = fopen(mem_name, "rb");
     if (file == NULL) {
-        perror("Erro ao abrir arquivo .mem");
+        mvwprintw(log, 1, 2, "Arquivo não encontrado! Digite um arquivo valido.");
         return -1;
     }
 
@@ -63,7 +62,7 @@ int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDO
             }
 
             *size = count;
-            mvwprintw(exec, 1, 20, "Informe o arquivo .mem: ");
+            mvwprintw(log, 1, 20, "Informe o arquivo .mem: ");
             fclose(file);
             return 0;
         }
@@ -75,7 +74,7 @@ int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDO
     rewind(file);
 
     if (file_size < 0) {
-        perror("Erro ao obter tamanho do arquivo");
+        mvwprintw(log, 1, 2, "Erro ao obter o tamanho do arquivo.");
         fclose(file);
         return -1;
     }
@@ -87,7 +86,7 @@ int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDO
 
     size_t bytes_read = fread(raw, 1, bytes_expected, file);
     if (bytes_read != bytes_expected) {
-        perror("Erro ao ler arquivo");
+        mvwprintw(log, 1, 2, "Erro ao abrir o arquivo!");
         fclose(file);
         return -1;
     }
@@ -101,12 +100,12 @@ int get_mem_file(const char *mem_name, Instrucao *instructions, int *size, WINDO
     return 0;
 }
  
-Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec){
+Memoria_instrucao *instruction_memory_load_file(const char *mem_name, WINDOW **exec, WINDOW * log){
     Memoria_instrucao *mem = instruction_memory_create();
     if (!mem) return NULL;
 
     int size = 0;
-    if (get_mem_file(mem_name, mem->instrucao, &size, *exec) != 0) {
+    if (get_mem_file(mem_name, mem->instrucao, &size, *exec, log) != 0) {
         free(mem->instrucao);
         free(mem);
         return NULL;

@@ -169,6 +169,7 @@ void copiaMEM_WB(MEM_WB *mem_wb_backup, const MEM_WB *mem_wb){
 }
 void clear_bi_di(BI_DI *bi_di) {
     if (!bi_di) return;
+    bi_di->v = 0;
     bi_di->pc = 0;
     bi_di->instrucao = 0;
     bi_di->v = 0;
@@ -176,6 +177,7 @@ void clear_bi_di(BI_DI *bi_di) {
 
 void clear_di_ex(DI_EX *di_ex) {
     if (!di_ex) return;
+    di_ex->v = 0;
     di_ex->pc = 0;
     di_ex->instrucao = 0;
     di_ex->opcode = 0;
@@ -203,6 +205,7 @@ void clear_di_ex(DI_EX *di_ex) {
 
 void clear_ex_mem(EX_MEM *ex_mem) {
     if (!ex_mem) return;
+    ex_mem->v = 0;
     ex_mem->pc = 0;
     ex_mem->instrucao = 0;
     ex_mem->opcode = 0;
@@ -227,6 +230,7 @@ void clear_ex_mem(EX_MEM *ex_mem) {
 
 void clear_mem_wb(MEM_WB *mem_wb) {
     if (!mem_wb) return;
+    mem_wb->v = 0;
     mem_wb->instrucao = 0;
     mem_wb->opcode = 0;
     mem_wb->rd = 0;

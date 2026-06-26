@@ -59,8 +59,8 @@ int main() {
         "Sair",
         "Carregar dados",
         "Carregar Instruções",
-        "Memória de instruções",
-        "Memória de dados", 
+        "Ver memória de instruções",
+        "Ver memória de dados", 
         "Ver instruções em assembly",
         "Salvar assembly",
         "Backup dados",
@@ -165,7 +165,7 @@ int main() {
                         noecho();
                         
                         
-                        new_mem = instruction_memory_load_file(mem_name, &log);
+                        new_mem = instruction_memory_load_file(mem_name, &exec, log);
                         if (new_mem) {
                             if (p->mem_inst) {
                                 free(p->mem_inst->instrucao);
@@ -187,6 +187,10 @@ int main() {
                     case 3: // Ver memória instrução
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                             mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
+                            wrefresh(menu);
+							wrefresh(log);
+							wrefresh(regw);
+							wrefresh(exec);   
                         } else {
 							erase();
 							clear();
@@ -231,6 +235,7 @@ int main() {
                     case 5: // Ver instruções em formato assembly
                         if (!p->mem_inst || p->mem_inst->loaded_count == 0) {
                             mvwprintw(log, 3, 1, "Carregue instruções na memória primeiro.");
+							wrefresh(log);
                         } else {
 							erase();
 							clear();
@@ -304,8 +309,7 @@ int main() {
                         
                         werase(log);
                         box(log, 0, 0);
-                        mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
-                        mvwprintw(log, 2, 1, "Ciclo guardado na pilha (Tamanho: %d)", pilha->tamanho);
+
                         
                         run_step(p, exec, regw, log);
                         
@@ -317,28 +321,26 @@ int main() {
                         break;
 
                     case 10: // Voltar 1 ciclo
-                        if (pilha->tamanho > 0) {
+                        if (pilha->tamanho> 0) {
                             desempilhar(pilha, p);
                             mostra_estagios(p, exec);
                             werase(log);
                             box(log, 0, 0);
-                            mvwprintw(log, 1, 1, "[LOG DE EXECUCAO]");
                             mvwprintw(log, 3, 1, "VOLTOU 1 CICLO! PC ATUAL: %d", p->pc.pc_index);
                             mvwprintw(log, 4, 1, "Estados na pilha: %d", pilha->tamanho);
                             
                             print_regs(p->regs_bank, regw);
                             programHead(13, p, p->mem_inst, regw);
                         } else {
-                            mvwprintw(log, 3, 1, "Impossivel voltar: Inicio do programa atingido.");
+                            mvwprintw(log, 3, 1, "Impossivel voltar: Inicio de programa atingido ou nenhum ciclo executado.");
                         }
                         wrefresh(exec);
                         wrefresh(regw);
                         wrefresh(log);
                         break;
 
-                    case 11: // Resetar simulador explicitamente
-                        reset_all(p);
-                        
+                    case 11: // Resetar simulador
+                        reset_all(p, pilha);
                         werase(log); 
                         box(log, 0, 0); 
                         mvwprintw(log, 3, 1, "Simulador resetado com sucesso!");
